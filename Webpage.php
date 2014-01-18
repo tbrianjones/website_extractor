@@ -17,18 +17,12 @@
     
     // extracted data
     public $local_links = array();
-    
+    public $emails = array();
+    public $phones = array();
+    public $addresses = array();
+        
     public function __construct( $url ) {
       $this->url = $url;
-    }
-    
-    public function get_local_links() {
-      return $this->local_links;
-    }
-    
-    public function add_local_link( $url ) {
-      if( ! in_array( $url, $this->local_links ) )
-        $this->local_links[] = $url;
     }
     
   }

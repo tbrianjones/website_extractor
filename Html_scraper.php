@@ -23,7 +23,7 @@
       
       // extract data
       $this->scrape_links();
-      $this->scrape_phones();
+      $this->scrape_emails();
       
       // return updated webpage object
       return $this->Webpage;
@@ -79,7 +79,7 @@
   					// save link - it has passed all the filters
   					if( CRAWLER_OUTPUT_LINK_MESSAGES )
     					echo "\n  - link saved: $url";
-  					$this->Webpage->add_local_link( $url );
+  					$this->Webpage->local_links[] = $url;
   					
   					$num_links++;
   						
@@ -91,6 +91,145 @@
 							
 		}		
     
+    // add emails to emails table
+		//
+		function scrape_emails() {
+		
+			echo "\n\n--- SCRAPING AND SAVING EMAILS";
+			
+			// scrape for email address with regex
+			//	- http://www.regular-expressions.info/email.html
+			$regex = '/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b/i';
+			$results = preg_match_all( $regex, $this->Webpage->html, $emails );
+						
+			// at least one email was found
+			if( $results > 0 ) {
+				$emails = $emails[0];
+				foreach( $emails as $email ){
+				  echo "\n  - email: $email";
+				  $this->Webpage->emails[] = $email;
+				}
+			}
+			
+			// no emails were found in this file
+			else
+				echo "\n  - no emails were found in this file";
+		
+		}
+		
+		// get addresses
+		//
+		function scrape_addresses()
+		{
+		
+			echo "\n\n--- SCRAPING ADDRESSES";
+						
+			// extract addresses from file contents
+			//
+			//	- some inspiration:
+			//	- http://stackoverflow.com/questions/11160192/how-to-parse-freeform-street-postal-address-out-of-text-and-into-components
+			//	- http://stackoverflow.com/questions/18730947/regex-to-match-a-limited-number-of-characters-including-an-unlimited-number-of-w?noredirect=1#comment27603970_18730947
+			//
+			// (\d{2,5}|post office|p\.?\s?o\.?)(\s*(?:\S\s*){10,100})
+			$regex = "/\b(p\.?\s?o\.?\b|post office|\d{2,5})\s*(?:\S\s*){8,50}(AK|Alaska|AL|Alabama|AR|Arkansas|AZ|Arizona|CA|California|CO|Colorado|CT|Connecticut|DC|Washington\sDC|Washington\D\.C\.|DE|Delaware|FL|Florida|GA|Georgia|GU|Guam|HI|Hawaii|IA|Iowa|ID|Idaho|IL|Illinois|IN|Indiana|KS|Kansas|KY|Kentucky|LA|Louisiana|MA|Massachusetts|MD|Maryland|ME|Maine|MI|Michigan|MN|Minnesota|MO|Missouri|MS|Mississippi|MT|Montana|NC|North\sCarolina|ND|North\sDakota|NE|New\sEngland|NH|New\sHampshire|NJ|New\sJersey|NM|New\sMexico|NV|Nevada|NY|New\sYork|OH|Ohio|OK|Oklahoma|OR|Oregon|PA|Pennsylvania|RI|Rhode\sIsland|SC|South\sCarolina|SD|South\sDakota|TN|Tennessee|TX|Texas|UT|Utah|VA|Virginia|VI|Virgin\sIslands|VT|Vermont|WA|Washington|WI|Wisconsin|WV|West\sVirginia|WY|Wyoming)(\s+|\&nbsp\;|\<(\S|\s){1,10}\>){1,5}\d{5}/i";
+			$results = preg_match_all( $regex, $this->File->contents, $addresses );
+			if( $results > 0 ) {
+				
+				// get the addresses from the preg match array
+				$addresses = $addresses[0];
+				
+				// remove duplicates so we only count each address once per page
+				
+				// process all addresses
+				foreach( $addresses as $address ) {
+					
+					// clean up address
+					$address = html_entity_decode( $address );
+					$address = str_replace( ',', ', ', $address ); // add a space after commas
+					$address = preg_replace( '/\&[^\;]{1,5}\;/', ' ', $address ); // remove entities not converted
+					$address = preg_replace( '/<[^>]+>/', ' ', $address ); // remove html
+					$address = preg_replace( '/[^a-zA-Z0-9\.\-\,]/', ' ', $address );
+					$address = preg_replace( '/\s+/S', ' ', $address ); // remove multiple spaces
+					
+					// remove multiple numbers at the beginning
+					$i = -1;
+					$parts = explode( ' ', $address );
+					foreach( $parts as $part ) {
+						if( is_numeric( trim( $part ) ) )
+							$i++;
+						else
+							break;
+					}
+					if( $i > 0 ) {
+						$p = 0;
+						while( $i > $p ) {
+							unset( $parts[$p] );
+							$p++;
+						}
+						$address = implode( ' ', $parts );
+					}
+					
+					// store address
+					$this->Webpage->addresses[] = $address;
+					
+				}
+				
+			} else {
+				echo "\n\n  - no addresses were found in this file";
+			}
+
+		}
+		
+		// get phone numbers
+		//
+		function scrape_phones() {
+						
+			echo "\n\n\n--- SCRAPING PHONES ---";
+						
+			// extract phones from file contents
+			//
+			//	- some inspiration:
+			//	- http://stackoverflow.com/questions/123559/a-comprehensive-regex-for-phone-number-validation
+			//
+			$regex = "/(\s|\b)(\(\d{3}\)|\d{3})(\s|\-|\.)\d{3}(\s|\-|\.)\d{4}\b/";
+			$results = preg_match_all( $regex, $this->File->contents, $phones );
+			if( $results > 0 ) {
+				
+				// get the emails from the preg match array
+				$phones = $phones[0];
+								
+				// process all phones
+				foreach( $phones as $phone ) {
+					
+					// look for fax
+					$fax = 0;
+					$pos = -1;
+					$matches = array();
+					while( $pos = strpos( $this->File->contents, $phone, $pos + 1 ) ) {
+						$match = substr( $this->File->contents, $pos - 50, strlen( $phone ) + 50 );
+						$match = html_entity_decode( $match );
+						$match = preg_replace( '/<[^>]+>/', ' ', $match ); // remove html
+						$match = preg_replace( '/\s+/S', ' ', $match );
+						if( stripos( $match, 'fax' ) ) {
+							if( stripos( $match, $phone ) - stripos( $match, 'fax' ) < 12 )
+								$fax = 1;
+						}
+					}
+										
+					// clean phone number
+					$phone = preg_replace( '/[^0-9]/', '', $phone );
+					$phone = substr( $phone, 0, 3 ) . '-' . substr( $phone, 3, 3 ) . '-' . substr( $phone, 6, 4 );	
+					
+					$this->Webpage->phones[] = $phone;
+					
+				}
+				
+			} else {
+				echo "\n\n  - no phones were found in this file";
+			}
+
+		}
+				
     
   // --- UTILITIES TO CLEANSE AND FILTER URLS -------------------------------------------
 		

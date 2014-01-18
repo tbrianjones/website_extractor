@@ -52,7 +52,8 @@
           // scrape webpage
           $Webpage = $this->Scraper->go( $Webpage );
           // add new webpages to website
-          $local_links = $Webpage->get_local_links();
+          $local_links = $Webpage->local_links;
+          $local_links = array_unique( $local_links ); // do not iterate over duplicates
           foreach( $local_links as $url )
             $this->Website->add_webpage( new Webpage( $url ) );
         }

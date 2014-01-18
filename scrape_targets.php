@@ -32,6 +32,16 @@
     // process data from $Website object and write to csv
     // var_dump( $Website );
     
+    $webpages = $Website->get_webpages();
+    foreach( $webpages as $Webpage ) {
+      if(
+        count( $Webpage->emails ) > 0
+        OR count( $Webpage->phones ) > 0
+        OR count( $Webpage->addresses ) > 0
+      )
+        var_dump( $Webpage );
+    }
+    
     die;
     
   }
