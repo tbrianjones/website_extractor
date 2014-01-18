@@ -23,8 +23,8 @@
     }
     
     public function add_webpage( webpage $Webpage ) {
-      if( ! array_key_exists( $Webpage->url, $this->webpages )
-        $this->webpages[] = $Webpage;
+      if( ! array_key_exists( $Webpage->url, $this->webpages ) )
+        $this->webpages[ $Webpage->url ] = $Webpage;
     }
     
     public function update_webpage( webpage $Webpage ) {

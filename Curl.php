@@ -3,7 +3,7 @@
   class Curl {
     
     // download file
-		function go( class $Webpage ) {
+		function go( webpage $Webpage ) {
 		
 			// output what's happening
 			echo "\n\n\n--- DOWNLOADING FILE---";
@@ -46,15 +46,15 @@
 			// mark file as junk if any errors occured during download
 			if( $err > 0 || strlen( $errmsg ) > 0 ) {
 			  $Webpage->junk = TRUE;
-				$Webpage->download_error = "download errors: $errmsg" );
-				return FALSE;
+				$Webpage->download_error = "download errors: $errmsg";
+				return $Webpage;
       }
 			
 			// mark file as junk if content_type could not be determined.
 			if( is_null( $header['content_type'] ) || $header['content_type'] == '' ) {
 			  $Webpage->junk = TRUE;
-				$Webpage->download_error = 'content type could not be determined' );
-				return FALSE;
+				$Webpage->download_error = 'content type could not be determined';
+				return $Webpage;
       }
 			
 			// seperate content type from encoding and set values
@@ -64,7 +64,7 @@
 				$Webpage->encoding = trim( str_replace( 'charset=', '', strtolower( $array[1] ) ) );
 			
 			// check if current url is different than final url downloader was directed to
-			if( $this->url != $header['url'] ) {
+			if( $Webpage->url != $header['url'] ) {
         // deal with redirects here some day
 			}
 			
@@ -74,15 +74,15 @@
 			// mark all files that didn't return a http response of 200 as junk
 			if( $header[ 'http_code' ] != 200 ) {
 			  $Webpage->junk = TRUE;
-				$Webpage->download_error = 'http response was ' . $header['http_code'] );
-				return FALSE;
+				$Webpage->download_error = 'http response was ' . $header['http_code'];
+				return $Webpage;
       }
 			
 			// mark all files that are over this->max_download_size as junk
-			if( $header[ 'size_download' ] > $this->max_download_size ) {
+			if( $header[ 'size_download' ] > CURL_MAX_DOWNLOAD_SIZE ) {
 			  $Webpage->junk = TRUE;
-				$Webpage->download_error = "exceeded max download size of $this->max_download_size bytes" );
-				return FALSE;
+				$Webpage->download_error = "exceeded max download size of $this->max_download_size bytes";
+				return $Webpage;
       }
 				
 			// overwrite encoding if it's also set in html meta headers
@@ -94,16 +94,16 @@
 				$Webpage->encoding = strtolower( $charset[1] );
 			
 			// mark as junk if not an html page
-			if( $this->content_type != 'text/html' ) {
+			if( $Webpage->content_type != 'text/html' ) {
 			  $Webpage->junk = TRUE;
-				$Webpage->download_error = "$this->content_type files currently ignored" );
-				return FALSE;
+				$Webpage->download_error = "$this->content_type files currently ignored";
+				return $Webpage;
       }
 				
 			// mark file as junk if url suggests it's an image or pdf, but it resolves to a content-type of text/html
-			$extension = substr( $this->url, -3 );
+			$extension = substr( $Webpage->url, -3 );
 			if(
-				$this->content_type == 'text/html'
+				$Webpage->content_type == 'text/html'
 				&& (
 					$extension == 'jpg'
 					OR $extension == 'peg'
@@ -114,15 +114,15 @@
 				)
 			) {
 			  $Webpage->junk = TRUE;
-				$Webpage->download_error = "non-html url resolved to content type text/html" );
-				return FALSE;
+				$Webpage->download_error = "non-html url resolved to content type text/html";
+				return $Webpage;
       }
 			
 			// mark as junk if over max content size
-			if( $header['download_content_length'] > $this->max_html_download_size && $this->content_type == 'text/html' ) {
+			if( $header['download_content_length'] > CURL_MAX_HTML_DOWNLOAD_SIZE && $Webpage->content_type == 'text/html' ) {
 			  $Webpage->junk = TRUE;
-				$Webpage->download_error = "over max html download size of $this->max_html_download_size bytes" );
-				return FALSE;
+				$Webpage->download_error = 'over max html download size of '.CURL_MAX_HTML_DOWNLOAD_SIZE.' bytes';
+				return $Webpage;
       }
 			
 			// mark as junk if this is the website root_url and we've been redirected to a different domain

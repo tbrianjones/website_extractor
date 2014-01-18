@@ -1,6 +1,6 @@
 <?php
 
-  class Html_scraper() {
+  class Html_scraper {
     
     public $Webpage;
     private $Dom;
@@ -12,22 +12,22 @@
 		//
 		var $max_url_length     = 255;  // max url length we allow in our data
 		var $max_links_to_save  = 100;  // max links to save per page
-    
-    public function __construct(
-      webpage $Webpage
-    ) {
+  
+    public function go( webpage $Webpage ) {
       
       $this->Webpage = $Webpage;
       
       // create dom object ( *requires the php xml library - AWS Linux: sudo yum install php-xml )
 			$this->Dom = new DOMDocument();
-			@$this->Dom->loadHTML( $this->Webpage->html ); // @ hides errors for malformed html
-			
-			// extract data
-			$this->scrape_links();
-			
+			@$this->Dom->loadHTML( $this->Webpage->html ); // @ hides errors for malformed html			
+      
+      // extract data
+      $this->scrape_links();
+      
+      // return updated webpage object
+      return $this->Webpage;
+      
     }
-  
   
   // --- LINK SCRAPERS --------------------------------------
   
@@ -45,40 +45,44 @@
 			//	*** don't eliminate duplicate links because we will lose anchor text that
 			//		will be found in subsequent links to the same file later on the page
 			//
-			$elements = $this->Dom->getElementsByTagName( 'a' );
-			$elements = array_merge( $links, $this->Dom->getElementsByTagName( 'A' ) );
-				
-			if( $elements->length > 0 ) {
-			
-				$i = 0;
-				$num_links = 0;
-				$count = $elements->length;
-				foreach ( $elements as $element ) {
-					
-					$i++;
-					echo "\n\n\n -- PROCESSING LINK $i OF $count";
-					
-					// stop processing links if we've processed the max specified
-					if( $num_links > $this->max_links_to_save ) {
-						echo "\n\n ** max links processed - remaining links have been skipped";
-						break( 1 );
-					}						
-					
-					// extract href, filter url and clean it
-					$url = $element->getAttribute( 'href' );
-					$url = $this->filter_url( $url );
-					if( $url )
-						continue;
-					
-					// save link - it has passed all the filters
-					$this->Webpage->add_local_link( $url );
-					
-					$num_links++;
+			$links[0] = $this->Dom->getElementsByTagName( 'a' );
+			$links[1] = $this->Dom->getElementsByTagName( 'A' );
 						
-				}
+			foreach( $links as $elements )
+			{
 				
-			}
-				
+  			if( $elements->length > 0 ) {
+  			
+  				$i = 0;
+  				$num_links = 0;
+  				$count = $elements->length;
+  				foreach ( $elements as $element ) {
+  					
+  					$i++;
+  					echo "\n\n\n -- PROCESSING LINK $i OF $count";
+  					
+  					// stop processing links if we've processed the max specified
+  					if( $num_links > $this->max_links_to_save ) {
+  						echo "\n\n ** max links processed - remaining links have been skipped";
+  						break( 1 );
+  					}						
+  					
+  					// extract href, filter url and clean it
+  					$url = $element->getAttribute( 'href' );
+  					$url = $this->filter_url( $url );
+  					if( $url )
+  						continue;
+  					
+  					// save link - it has passed all the filters
+  					$this->Webpage->add_local_link( $url );
+  					
+  					$num_links++;
+  						
+  				}
+  				
+  			}
+  			
+  		}	
 							
 		}		
     
@@ -106,7 +110,7 @@
 			}
 			
 			// get absolute url
-			$url = $this->get_absolute_url( $url, $this->url );
+			$url = $this->get_absolute_url( $url, $this->Webpage->url );
 			
 			// clean url
 			$url = $this->clean_url( $url );
@@ -147,7 +151,7 @@
 			}
 			
 			// parse current file url and the url we are filtering
-			$parsed_file_url = parse_url( $this->url );
+			$parsed_file_url = parse_url( $this->Webpage->url );
 			$parsed_url = parse_url( $url );
 			
 			// filter if no host is found
@@ -188,7 +192,7 @@
 			//	- www.domain.com and products.domain.com are treated as the same when using $this->get_domain_from_url
 			//	- www.domain.com and www.website.com are treated as different and skipped
 			//
-			if( $this->get_domain_from_url( $this->url ) != $this->get_domain_from_url( $url ) ) {
+			if( $this->get_domain_from_url( $this->Webpage->url ) != $this->get_domain_from_url( $url ) ) {
 				echo "\n\n  * link skipped because url is on a different domain";
 				echo "\n    url: $url";
 				return TRUE;

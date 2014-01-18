@@ -17,7 +17,7 @@
   require_once( 'Website.php' );
 
   // process each target
-  require( 'crawler.php' );
+  require( 'Crawler.php' );
   foreach( $targets as $target ) {
     
     // populate website object
@@ -29,8 +29,11 @@
     $Crawler = new Crawler( $Website );
     $Crawler->go( 5 );
     
+    // process data from $Website object and write to csv
     var_dump( $Website );
-        
+    
+    die;
+    
   }
 
 ?>

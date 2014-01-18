@@ -2,9 +2,9 @@
 
   class Crawler {
     
-    $Curl;
-    $Scraper;
-    $Website; // the website being crawled
+    private $Curl;
+    private $Scraper;
+    private $Website; // the website being crawled
     
     // array containing all found page urls
     private $urls = array();
@@ -17,7 +17,7 @@
       
       // prime urls with base_url from website
       require_once( 'Webpage.php' );
-      $this->Website->webpages[] = new Webpage( $url );
+      $this->Website->add_webpage( new Webpage( $this->Website->base_url ) );
       
       // create curl object to download urls
       require_once( 'Curl.php' );
@@ -37,7 +37,9 @@
       $webpages_crawled = 0;
       $webpages = $this->Website->get_webpages();
       foreach( $webpages as $url => $Webpage ) {
-      
+        
+        echo "\n\n\n--- $webpages_crawled of $limit) Processing: $url";
+        
         // stop crawling when specified limit is reached
         if( $webpages_crawled == $limit ) {
           echo "\n\n ** Crawler processed specified max number of files .. crawling stopped.";
@@ -45,18 +47,21 @@
         }
         
         if( $Webpage = $this->Curl->go( $Webpage ) ) {
-          $Webpage = $this->Scraper( $Webpage );
+        
+          // scrape webpage
+          $Webpage = $this->Scraper->go( $Webpage );
 
           // add new webpages to website
           $local_links = $Webpage->get_local_links();
           foreach( $local_links as $url )
             $this->Website->add_webpage( new Webpage( $url ) );
+          
         }
         
         $this->Website->update_webpage( $Webpage );
         
         $webpages_crawled++;
-        
+                
       }
       
     } // end function
