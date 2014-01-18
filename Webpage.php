@@ -19,6 +19,7 @@
     public $local_links = array();
     public $emails = array();
     public $phones = array();
+    public $faxes = array();
     public $addresses = array();
         
     public function __construct( $url ) {

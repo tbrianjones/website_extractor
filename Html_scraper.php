@@ -24,6 +24,8 @@
       // extract data
       $this->scrape_links();
       $this->scrape_emails();
+      $this->scrape_phones();
+      $this->scrape_addresses();
       
       // return updated webpage object
       return $this->Webpage;
@@ -132,7 +134,7 @@
 			//
 			// (\d{2,5}|post office|p\.?\s?o\.?)(\s*(?:\S\s*){10,100})
 			$regex = "/\b(p\.?\s?o\.?\b|post office|\d{2,5})\s*(?:\S\s*){8,50}(AK|Alaska|AL|Alabama|AR|Arkansas|AZ|Arizona|CA|California|CO|Colorado|CT|Connecticut|DC|Washington\sDC|Washington\D\.C\.|DE|Delaware|FL|Florida|GA|Georgia|GU|Guam|HI|Hawaii|IA|Iowa|ID|Idaho|IL|Illinois|IN|Indiana|KS|Kansas|KY|Kentucky|LA|Louisiana|MA|Massachusetts|MD|Maryland|ME|Maine|MI|Michigan|MN|Minnesota|MO|Missouri|MS|Mississippi|MT|Montana|NC|North\sCarolina|ND|North\sDakota|NE|New\sEngland|NH|New\sHampshire|NJ|New\sJersey|NM|New\sMexico|NV|Nevada|NY|New\sYork|OH|Ohio|OK|Oklahoma|OR|Oregon|PA|Pennsylvania|RI|Rhode\sIsland|SC|South\sCarolina|SD|South\sDakota|TN|Tennessee|TX|Texas|UT|Utah|VA|Virginia|VI|Virgin\sIslands|VT|Vermont|WA|Washington|WI|Wisconsin|WV|West\sVirginia|WY|Wyoming)(\s+|\&nbsp\;|\<(\S|\s){1,10}\>){1,5}\d{5}/i";
-			$results = preg_match_all( $regex, $this->File->contents, $addresses );
+			$results = preg_match_all( $regex, $this->Webpage->html, $addresses );
 			if( $results > 0 ) {
 				
 				// get the addresses from the preg match array
@@ -192,7 +194,7 @@
 			//	- http://stackoverflow.com/questions/123559/a-comprehensive-regex-for-phone-number-validation
 			//
 			$regex = "/(\s|\b)(\(\d{3}\)|\d{3})(\s|\-|\.)\d{3}(\s|\-|\.)\d{4}\b/";
-			$results = preg_match_all( $regex, $this->File->contents, $phones );
+			$results = preg_match_all( $regex, $this->Webpage->html, $phones );
 			if( $results > 0 ) {
 				
 				// get the emails from the preg match array
@@ -205,8 +207,8 @@
 					$fax = 0;
 					$pos = -1;
 					$matches = array();
-					while( $pos = strpos( $this->File->contents, $phone, $pos + 1 ) ) {
-						$match = substr( $this->File->contents, $pos - 50, strlen( $phone ) + 50 );
+					while( $pos = strpos( $this->Webpage->html, $phone, $pos + 1 ) ) {
+						$match = substr( $this->Webpage->html, $pos - 50, strlen( $phone ) + 50 );
 						$match = html_entity_decode( $match );
 						$match = preg_replace( '/<[^>]+>/', ' ', $match ); // remove html
 						$match = preg_replace( '/\s+/S', ' ', $match );
@@ -217,11 +219,14 @@
 					}
 										
 					// clean phone number
-					$phone = preg_replace( '/[^0-9]/', '', $phone );
-					$phone = substr( $phone, 0, 3 ) . '-' . substr( $phone, 3, 3 ) . '-' . substr( $phone, 6, 4 );	
-					
-					$this->Webpage->phones[] = $phone;
-					
+  				$phone = preg_replace( '/[^0-9]/', '', $phone );
+          $phone = substr( $phone, 0, 3 ) . '-' . substr( $phone, 3, 3 ) . '-' . substr( $phone, 6, 4 );	
+          
+          if( $fax )  
+            $this->Webpage->faxes[] = $phone;
+          else
+					  $this->Webpage->phones[] = $phone;
+					  
 				}
 				
 			} else {
