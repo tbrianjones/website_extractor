@@ -23,6 +23,7 @@
       
       // extract data
       $this->scrape_links();
+      $this->scrape_phones();
       
       // return updated webpage object
       return $this->Webpage;
@@ -38,7 +39,7 @@
 		//
 		function scrape_links() {
 			
-			echo "\n\n\n--- SCRAPING AND PROCESSING LINKS ---";
+			echo "\n\n--- SCRAPING AND PROCESSING LINKS";
 			
 			// get all <a> elements from file
 			//
@@ -59,21 +60,25 @@
   				foreach ( $elements as $element ) {
   					
   					$i++;
-  					echo "\n\n\n -- PROCESSING LINK $i OF $count";
+  					if( CRAWLER_OUTPUT_LINK_MESSAGES )
+    					echo "\n\n -- PROCESSING LINK $i OF $count";
   					
   					// stop processing links if we've processed the max specified
   					if( $num_links > $this->max_links_to_save ) {
-  						echo "\n\n ** max links processed - remaining links have been skipped";
+  						if( CRAWLER_OUTPUT_LINK_MESSAGES )
+    					  echo "\n\n ** max links processed - remaining links have been skipped";
   						break( 1 );
   					}						
   					
   					// extract href, filter url and clean it
   					$url = $element->getAttribute( 'href' );
   					$url = $this->filter_url( $url );
-  					if( $url )
+  					if( $url === TRUE )
   						continue;
   					
   					// save link - it has passed all the filters
+  					if( CRAWLER_OUTPUT_LINK_MESSAGES )
+    					echo "\n  - link saved: $url";
   					$this->Webpage->add_local_link( $url );
   					
   					$num_links++;
@@ -104,8 +109,10 @@
 			
 			// skip link if it contains the word 'javascript'
 			if( strpos( $url, 'javascript' ) !== FALSE ) {
-				echo "\n\n  * link skipped because url contains javascript";
-				echo "\n    url: $url";
+				if( CRAWLER_OUTPUT_LINK_MESSAGES ) {
+  				echo "\n\n  * link skipped because url contains javascript";
+          echo "\n    url: $url";
+        }
 				return TRUE;
 			}
 			
@@ -117,16 +124,20 @@
 			
 			// make sure link isn't too long
 			if( strlen( $url ) > $this->max_url_length ) {
-				echo "\n\n  * link skipped because url exceeded $this->max_url_length characters";
-				echo "\n    url: $url";
+				if( CRAWLER_OUTPUT_LINK_MESSAGES ) {
+				  echo "\n\n  * link skipped because url exceeded $this->max_url_length characters";
+          echo "\n    url: $url";
+				}
 				return TRUE;
 			}
 			
 			// check url for multiple question marks
 			str_replace( '?', '?', $url, $occurances );
 			if( $occurances > 1 ) {
-				echo "\n\n  * link skipped because url contains multiple question marks";
-				echo "\n    url: $url";
+			  if( CRAWLER_OUTPUT_LINK_MESSAGES ) {
+  				echo "\n\n  * link skipped because url contains multiple question marks";
+  				echo "\n    url: $url";
+        }
 				return TRUE;
 			}
 			
@@ -145,8 +156,10 @@
 			$num_unique_strings = count( array_unique( $strings ) );
 			if( $num_strings != $num_unique_strings )
 			{
-				echo "\n\n  * link skipped because uri contains repeat folders";
-				echo "\n    url: $url";
+				if( CRAWLER_OUTPUT_LINK_MESSAGES ) {
+  				echo "\n\n  * link skipped because uri contains repeat folders";
+  				echo "\n    url: $url";
+        }
 				return TRUE;
 			}
 			
@@ -159,8 +172,10 @@
 				! isset( $parsed_file_url[ 'host' ] )
 				OR ! isset( $parsed_url[ 'host' ] )
 			) {
-				echo "\n\n  * link skipped because a host could not be determined from the url";
-				echo "\n    url: $url";
+				if( CRAWLER_OUTPUT_LINK_MESSAGES ) {
+	  			echo "\n\n  * link skipped because a host could not be determined from the url";
+          echo "\n    url: $url";
+        }
 				return TRUE;
 			}
 			
@@ -182,8 +197,10 @@
 				AND $parsed_file_url[ 'scheme' ] != $parsed_url[ 'scheme' ] . 's'
 				AND $parsed_file_url[ 'scheme' ] . 's' != $parsed_url[ 'scheme' ]
 			) {
-				echo "\n\n  * link skipped because url had a different scheme ( http vs ftp )";
-				echo "\n    url: $url";
+				if( CRAWLER_OUTPUT_LINK_MESSAGES ) {
+  				echo "\n\n  * link skipped because url had a different scheme ( http vs ftp )";
+          echo "\n    url: $url";
+        }
 				return TRUE;
 			}
 			
@@ -193,8 +210,10 @@
 			//	- www.domain.com and www.website.com are treated as different and skipped
 			//
 			if( $this->get_domain_from_url( $this->Webpage->url ) != $this->get_domain_from_url( $url ) ) {
-				echo "\n\n  * link skipped because url is on a different domain";
-				echo "\n    url: $url";
+				if( CRAWLER_OUTPUT_LINK_MESSAGES ) {
+  				echo "\n\n  * link skipped because url is on a different domain";
+          echo "\n    url: $url";
+        }
 				return TRUE;
 			}
 

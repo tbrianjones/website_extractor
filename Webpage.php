@@ -27,7 +27,7 @@
     }
     
     public function add_local_link( $url ) {
-      if( ! in_array( $this->local_links ) )
+      if( ! in_array( $url, $this->local_links ) )
         $this->local_links[] = $url;
     }
     

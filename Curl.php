@@ -6,7 +6,7 @@
 		function go( webpage $Webpage ) {
 		
 			// output what's happening
-			echo "\n\n\n--- DOWNLOADING FILE---";
+			echo "\n\n--- DOWNLOADING FILE";
 			
 			// mark wmv files as junk and don't download
 			if( substr( $Webpage->url, -4 ) == '.wmv' )
@@ -33,12 +33,14 @@
 			curl_close( $curl );	
 			
 			// output data and results
-			echo "\n";
-			foreach( $header as $key => $value )
-				echo "\n    $key: $value";
-			echo "\n\n  - number of errors: $err";
-			if( $err > 0 )
-				echo "\n  * error messages: $errmsg";
+			if( CRAWLER_OUTPUT_DOWNLOAD_MESSAGES ) {
+  			echo "\n";
+        foreach( $header as $key => $value )
+				  echo "\n    $key: $value";
+        echo "\n\n  - number of errors: $err";
+        if( $err > 0 )
+				  echo "\n  * error messages: $errmsg";
+      }
 			
 			// set file download size
 			$Webpage->size = $header['size_download'];
@@ -96,7 +98,7 @@
 			// mark as junk if not an html page
 			if( $Webpage->content_type != 'text/html' ) {
 			  $Webpage->junk = TRUE;
-				$Webpage->download_error = "$this->content_type files currently ignored";
+				$Webpage->download_error = "$Webpage->content_type files currently ignored";
 				return $Webpage;
       }
 				

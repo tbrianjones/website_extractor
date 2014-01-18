@@ -34,33 +34,34 @@
       $limit = 1 // max files to crawl
     ) {
       
-      $webpages_crawled = 0;
-      $webpages = $this->Website->get_webpages();
-      foreach( $webpages as $url => $Webpage ) {
-        
-        echo "\n\n\n--- $webpages_crawled of $limit) Processing: $url";
+      $num_webpages_crawled = 0;
+      $num_webpages_to_crawl = count( $this->Website->get_webpages() );
+      while( $num_webpages_crawled < $num_webpages_to_crawl ) {
         
         // stop crawling when specified limit is reached
-        if( $webpages_crawled == $limit ) {
+        if( $num_webpages_crawled == $limit ) {
           echo "\n\n ** Crawler processed specified max number of files .. crawling stopped.";
           break( 1 );
         }
         
+        $webpages = $this->Website->get_webpages();
+        $webpages = array_slice( $webpages, $num_webpages_crawled );
+        $Webpage = current( $webpages );
+        echo "\n\n=== PROCESSING WEBPAGE $num_webpages_crawled of $num_webpages_to_crawl ( max that will be crawled: $limit ): ".$Webpage->url;
         if( $Webpage = $this->Curl->go( $Webpage ) ) {
-        
           // scrape webpage
           $Webpage = $this->Scraper->go( $Webpage );
-
           // add new webpages to website
           $local_links = $Webpage->get_local_links();
           foreach( $local_links as $url )
             $this->Website->add_webpage( new Webpage( $url ) );
-          
         }
         
+        // update for next loop
         $this->Website->update_webpage( $Webpage );
-        
-        $webpages_crawled++;
+        $num_webpages_crawled++;
+        $num_webpages_to_crawl = count( $this->Website->get_webpages() );
+        sleep( CRAWLER_SLEEP_BETWEEN_DOWNLOADS );
                 
       }
       

@@ -30,7 +30,7 @@
     $Crawler->go( 5 );
     
     // process data from $Website object and write to csv
-    var_dump( $Website );
+    // var_dump( $Website );
     
     die;
     
