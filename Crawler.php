@@ -47,7 +47,7 @@
         $webpages = $this->Website->get_webpages();
         $webpages = array_slice( $webpages, $num_webpages_crawled );
         $Webpage = current( $webpages );
-        echo "\n\n=== PROCESSING WEBPAGE $num_webpages_crawled of $num_webpages_to_crawl ( max that will be crawled: $limit ): ".$Webpage->url;
+        echo "\n\n=== PROCESSING WEBPAGE $num_webpages_crawled of $num_webpages_to_crawl ( max that will be crawled: $limit )\n    $Webpage->url";
         if( $Webpage = $this->Curl->go( $Webpage ) ) {
           // scrape webpage
           $Webpage = $this->Scraper->go( $Webpage );

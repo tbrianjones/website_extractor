@@ -177,7 +177,7 @@
 				}
 				
 			} else {
-				echo "\n\n  - no addresses were found in this file";
+				echo "\n  - no addresses were found in this file";
 			}
 
 		}
@@ -230,7 +230,7 @@
 				}
 				
 			} else {
-				echo "\n\n  - no phones were found in this file";
+				echo "\n  - no phones were found in this file";
 			}
 
 		}

@@ -83,7 +83,7 @@
 			// mark all files that are over this->max_download_size as junk
 			if( $header[ 'size_download' ] > CURL_MAX_DOWNLOAD_SIZE ) {
 			  $Webpage->junk = TRUE;
-				$Webpage->download_error = "exceeded max download size of $this->max_download_size bytes";
+				$Webpage->download_error = 'exceeded max download size of '.CURL_MAX_DOWNLOAD_SIZE.' bytes';
 				return $Webpage;
       }
 				

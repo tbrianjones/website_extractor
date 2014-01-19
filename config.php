@@ -8,7 +8,7 @@
   define( 'CRAWLER_OUTPUT_LINK_MESSAGES',         FALSE );  // output messages about link processing
   
   // crawler sleep
-  define( 'CRAWLER_SLEEP_BETWEEN_DOWNLOADS',      0 );      // seconds to sleep between downloads
+  define( 'CRAWLER_SLEEP_BETWEEN_DOWNLOADS',      1 );      // seconds to sleep between downloads
 
   define( 'CURL_CONNECTION_TIMEOUT',      5 );
   define( 'CURL_DOWNLOAD_TIMEOUT',        10 );

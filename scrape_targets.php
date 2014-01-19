@@ -41,13 +41,13 @@
     
     // crawl website
     $Crawler = new Crawler( $Website );
-    $Crawler->go( 10 );
+    $Crawler->go( 25 );
     
     
     // --- process data from $Website object and write to csv ---
     
     
-    echo "\n\n--- Website Data ---";
+    echo "\n\n--- Calculating Website Data ---";
     
     // compile data from all webpages crawled on this website
     $webpages = $Website->get_webpages();
@@ -146,11 +146,12 @@
       if( $i == 5 )
         break(1);
     }
-    $notes .= "Primary Address\n$primary_address";
+    if( $primary_address != '' )
+      $notes .= "Primary Address\n$primary_address";
     $notes = str_replace( "'", '"', $notes ); // removes single quotes ( which there really shouldn't be anyway ), so we don't mess up the csv
-    
+        
     // generate csv line and save it
-    $csv_string = "\n'$Website->name','$primary_phone','$primary_email','$street','$city','$state','$country',".ORGANIZATION_TAG.",'$notes'";
+    $csv_string = "\n".'"'.$Website->name.'","'.$primary_phone.'","'.$primary_email.'","'.$Website->base_url.'","'.$street.'","'.$city.'","'.$state.'","","'.$country.'","'.ORGANIZATION_TAG.'","'.$notes.'"';
     file_put_contents( CSV_RESULTS_FILE_PATH, $csv_string, FILE_APPEND );
     
     echo "\n  - email: $primary_email";
