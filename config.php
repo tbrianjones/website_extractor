@@ -1,5 +1,8 @@
 <?php
   
+  // the csv file results are stashed in
+  define( 'CSV_RESULTS_FILE_PATH', 'results.csv' );
+  
   // output processing messages
   define( 'CRAWLER_OUTPUT_DOWNLOAD_MESSAGES',     FALSE );  // output messages about downloading files processing
   define( 'CRAWLER_OUTPUT_LINK_MESSAGES',         FALSE );  // output messages about link processing
