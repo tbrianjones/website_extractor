@@ -155,8 +155,6 @@
     echo "\n  - phone: $primary_phone";
     echo "\n  - address: $primary_address";
 
-    die;
-
   }
 
 ?>

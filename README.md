@@ -1,7 +1,8 @@
 Website Data Extractor
 ======================
 
-### A utility That
+
+### A Utility That
 - takes a .csv of urls as an input
 - crawls the sites
 - extracts basic info about each site ( including contact pages that exist )
@@ -9,7 +10,6 @@ Website Data Extractor
 
 
 ### Using This Tool
-
 - make sure your settings are correct ( config.php )
 - put a list of company names and urls into the targets.csv file.
   - names in column a and urls in column b
@@ -21,3 +21,14 @@ Website Data Extractor
   - click to import on right, near the top
   - choose the results.csv file
   - go to town
+
+  
+### Dev Notes
+- Improve HTML Scraper to allow crawling of sites with JS redirects and Frames
+  - recycle cortex crawler html_file_processor code for stuff below
+	- add frame scraper for links
+		- store links a 
+	- add javascript redirects scraping
+		- store as regular link
+	- combine all link scraping into one link scrape method
+		- regular links, redirect, and frame
