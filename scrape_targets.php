@@ -1,8 +1,5 @@
 <?php
   
-  // *** DEFINE AN ORGANIZATION TAG ***
-  define( 'ORGANIZATION_TAG', 'Trade Org' );
-  
   // load config
   require_once( 'config.php' );
   
@@ -41,7 +38,7 @@
     
     // crawl website
     $Crawler = new Crawler( $Website );
-    $Crawler->go( 25 );
+    $Crawler->go( CRAWLER_MAX_WEBPAGES_TO_CRAWL );
     
     
     // --- process data from $Website object and write to csv ---
