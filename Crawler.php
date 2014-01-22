@@ -35,11 +35,12 @@
     ) {
       
       $num_webpages_crawled = 0;
+      $num_webpages_scraped = 0;
       $num_webpages_to_crawl = count( $this->Website->get_webpages() );
       while( $num_webpages_crawled < $num_webpages_to_crawl ) {
         
         // stop crawling when specified limit is reached
-        if( $num_webpages_crawled == $limit ) {
+        if( $num_webpages_scraped == $limit ) {
           echo "\n\n ** Crawler processed specified max number of files .. crawling stopped.";
           break( 1 );
         }
@@ -47,15 +48,20 @@
         $webpages = $this->Website->get_webpages();
         $webpages = array_slice( $webpages, $num_webpages_crawled );
         $Webpage = current( $webpages );
-        echo "\n\n=== PROCESSING WEBPAGE $num_webpages_crawled of $num_webpages_to_crawl ( max that will be crawled: $limit )\n    $Webpage->url";
+        echo "\n\n=== PROCESSING WEBPAGE $num_webpages_crawled of $num_webpages_to_crawl Crawled - $num_webpages_scraped Scraped ( max to scrape: $limit )\n    $Webpage->url";
         if( $Webpage = $this->Curl->go( $Webpage ) ) {
-          // scrape webpage
-          $Webpage = $this->Scraper->go( $Webpage );
-          // add new webpages to website
-          $local_links = $Webpage->local_links;
-          $local_links = array_unique( $local_links ); // do not iterate over duplicates
-          foreach( $local_links as $url )
-            $this->Website->add_webpage( new Webpage( $url ) );
+          if( $Webpage->junk ) {
+            echo "\n ** JUNK: $Webpage->download_error";
+          } else {
+            // scrape webpage
+            $Webpage = $this->Scraper->go( $Webpage );
+            // add new webpages to website
+            $local_links = $Webpage->local_links;
+            $local_links = array_unique( $local_links ); // do not iterate over duplicates
+            foreach( $local_links as $url )
+              $this->Website->add_webpage( new Webpage( $url ) );
+            $num_webpages_scraped++;
+          }
         }
         
         // update for next loop

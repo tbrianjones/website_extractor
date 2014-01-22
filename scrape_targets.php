@@ -13,12 +13,12 @@
   $contents = file_get_contents( 'targets.csv' );
   $contents = explode( "\r\n", $contents );
   foreach( $contents as $content ) {
-    $content = explode( ',http', $content );
+    $content = explode( '","', $content );
     $target['name'] = trim( $content[0], '"' );
-    $target['url'] = 'http'.trim( $content[1], '"' );
+    $target['url'] = trim( $content[1], '"' );
     $targets[] = $target;
   }
-  
+    
   // load dst api client
   require_once( 'libraries/data_science_toolkit_php_api_client/dst_api_client.php' );
   $Dst = new Dst_api_client();
