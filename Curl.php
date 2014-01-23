@@ -9,8 +9,11 @@
 			echo "\n\n--- DOWNLOADING FILE";
 			
 			// mark wmv files as junk and don't download
-			if( substr( $Webpage->url, -4 ) == '.wmv' )
-				throw new Exception( 'wmv files are skipped' );
+			if( substr( $Webpage->url, -4 ) == '.wmv' ) {
+			  $Webpage->junk = TRUE;
+				$Webpage->download_error = "We don't process .wmv files.";
+				return $Webpage;
+      }
 			
 			// make curl request
 			$curl = curl_init( $Webpage->url );
