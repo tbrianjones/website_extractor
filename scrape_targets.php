@@ -9,16 +9,19 @@
   // create fresh results.csv
   file_put_contents( CSV_RESULTS_FILE_PATH, 'Organization Name,Work phone,Work email,Work web site,Work line #1,Work city,Work state,Work zip/postal code,Work country,Organization Tag 1,Background' );
 
-  // load targets into an array
+  // load targets.csv
   $contents = file_get_contents( 'targets.csv' );
-  $contents = explode( "\r\n", $contents );
+  // replace stupid angled double quotes
+  $contents = str_replace( '“', '"', $contents );
+  $contents = str_replace( '”', '"', $contents );
+  $contents = explode( "\n", $contents );
   foreach( $contents as $content ) {
     $content = explode( '","', $content );
     $target['name'] = trim( $content[0], '"' );
     $target['url'] = trim( $content[1], '"' );
     $targets[] = $target;
   }
-    
+      
   // load dst api client
   require_once( 'libraries/data_science_toolkit_php_api_client/dst_api_client.php' );
   $Dst = new Dst_api_client();
@@ -148,7 +151,7 @@
     $notes = str_replace( "'", '"', $notes ); // removes single quotes ( which there really shouldn't be anyway ), so we don't mess up the csv
         
     // generate csv line and save it
-    $csv_string = "\n".'"'.$Website->name.'","'.$primary_phone.'","'.$primary_email.'","'.$Website->base_url.'","'.$street.'","'.$city.'","'.$state.'","","'.$country.'","'.ORGANIZATION_TAG.'","'.$notes.'"';
+    $csv_string = "\n".'"'.$Website->name.' '.rand( 1000000000, 9999999999 ).'","'.$primary_phone.'","'.$primary_email.'","'.$Website->base_url.'","'.$street.'","'.$city.'","'.$state.'","","'.$country.'","'.ORGANIZATION_TAG.'","'.$notes.'"';
     file_put_contents( CSV_RESULTS_FILE_PATH, $csv_string, FILE_APPEND );
     
     echo "\n  - email: $primary_email";

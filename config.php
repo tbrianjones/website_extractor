@@ -1,16 +1,16 @@
 <?php
   
   // the max number of files to crawl per website
-  define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL',    50 );
+  define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL',    100 );
   
   // the tag to apply to each organization in insightly
-  define( 'ORGANIZATION_TAG', 'CA-OR-WA-EDCs' );
+  define( 'ORGANIZATION_TAG', 'CCR' );
   
   // the csv file results are stashed in
   define( 'CSV_RESULTS_FILE_PATH', 'results.csv' );
 
   // crawler sleep
-  define( 'CRAWLER_SLEEP_BETWEEN_DOWNLOADS',      0.5 );      // seconds to sleep between downloads
+  define( 'CRAWLER_SLEEP_BETWEEN_DOWNLOADS',      0 );      // seconds to sleep between downloads
 
   // output processing messages
   define( 'CRAWLER_OUTPUT_DOWNLOAD_MESSAGES',     FALSE );  // output messages about downloading files processing
