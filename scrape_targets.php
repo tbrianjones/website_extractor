@@ -7,18 +7,24 @@
   require_once( 'states_array.php' );
   
   // create fresh results.csv
-  file_put_contents( CSV_RESULTS_FILE_PATH, 'Organization Name,Work phone,Work email,Work web site,Work line #1,Work city,Work state,Work zip/postal code,Work country,Organization Tag 1,Background' );
+    file_put_contents( CSV_RESULTS_FILE_PATH, 'Organization Name,Work phone,Work email,Work web site,Work full address,Work line #1,Work city,Work state,Work zip/postal code,Work country' );
+  file_put_contents( INSIGHTLY_CSV_RESULTS_FILE_PATH, 'Organization Name,Work phone,Work email,Work web site,Work line #1,Work city,Work state,Work zip/postal code,Work country,Organization Tag 1,Background' );
 
   // load targets.csv
   $contents = file_get_contents( 'targets.csv' );
   // replace stupid angled double quotes
   $contents = str_replace( '“', '"', $contents );
   $contents = str_replace( '”', '"', $contents );
-  $contents = explode( "\n", $contents );
+  $contents = explode( NEW_LINE_CHARACTER, $contents );
   foreach( $contents as $content ) {
     $content = explode( '","', $content );
     $target['name'] = trim( $content[0], '"' );
-    $target['url'] = trim( $content[1], '"' );
+    if( ! parse_url( $content[1] ) ) {
+      echo "\n ** Bad URL ( ".$content[1]." ): skipping this target.";
+      continue;
+    }
+    $url = parse_url( $content[1], PHP_URL_SCHEME ).'://'.parse_url( $content[1], PHP_URL_HOST );
+    $target['url'] = trim( $url, '"' );
     $targets[] = $target;
   }
       
@@ -120,6 +126,10 @@
         $country = $parts['country_name'];
       else
         $country = '';
+      // extract zip
+      $zip = substr( $primary_address, -5 );
+      if( ! is_numeric( $zip ) )
+        $zip = '';
     } else {
       $primary_address = '';
       $street = '';
@@ -149,10 +159,14 @@
     if( $primary_address != '' )
       $notes .= "Primary Address\n$primary_address";
     $notes = str_replace( "'", '"', $notes ); // removes single quotes ( which there really shouldn't be anyway ), so we don't mess up the csv
-        
-    // generate csv line and save it
-    $csv_string = "\n".'"'.$Website->name.' '.rand( 1000000000, 9999999999 ).'","'.$primary_phone.'","'.$primary_email.'","'.$Website->base_url.'","'.$street.'","'.$city.'","'.$state.'","","'.$country.'","'.ORGANIZATION_TAG.'","'.$notes.'"';
+    
+    // generate basic results csv line and save
+    $csv_string = "\n".'"'.$Website->name.'","'.$primary_phone.'","'.$primary_email.'","'.$Website->base_url.'","'.$primary_address.'","'.$street.'","'.$city.'","'.$state.'","'.$zip.'","'.$country.'"';
     file_put_contents( CSV_RESULTS_FILE_PATH, $csv_string, FILE_APPEND );
+    
+    // generate insightly csv line and save
+    $csv_string = "\n".'"'.$Website->name.' '.rand( 1000000000, 9999999999 ).'","'.$primary_phone.'","'.$primary_email.'","'.$Website->base_url.'","'.$street.'","'.$city.'","'.$state.'","'.$zip.'","'.$country.'","'.ORGANIZATION_TAG.'","'.$notes.'"';
+    file_put_contents( INSIGHTLY_CSV_RESULTS_FILE_PATH, $csv_string, FILE_APPEND );
     
     echo "\n  - email: $primary_email";
     echo "\n  - phone: $primary_phone";

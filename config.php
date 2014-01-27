@@ -1,13 +1,17 @@
 <?php
   
+  // target list settings
+  define( 'NEW_LINE_CHARACTER', "\r\n" );
+  
   // the max number of files to crawl per website
-  define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL',    100 );
+  define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL',    25 );
   
   // the tag to apply to each organization in insightly
-  define( 'ORGANIZATION_TAG', 'CCR' );
+  define( 'ORGANIZATION_TAG', 'logistics' );
   
-  // the csv file results are stashed in
+  // results files
   define( 'CSV_RESULTS_FILE_PATH', 'results.csv' );
+  define( 'INSIGHTLY_CSV_RESULTS_FILE_PATH', 'insightly_results.csv' );
 
   // crawler sleep
   define( 'CRAWLER_SLEEP_BETWEEN_DOWNLOADS',      0 );      // seconds to sleep between downloads
