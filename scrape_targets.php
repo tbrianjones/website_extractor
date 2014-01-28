@@ -7,7 +7,7 @@
   require_once( 'states_array.php' );
   
   // create fresh results.csv
-    file_put_contents( CSV_RESULTS_FILE_PATH, 'Organization Name,Work phone,Work email,Work web site,Work full address,Work line #1,Work city,Work state,Work zip/postal code,Work country' );
+    file_put_contents( CSV_RESULTS_FILE_PATH, 'Business Name,URL,Telephone,Street,City,State,Zip' );
   file_put_contents( INSIGHTLY_CSV_RESULTS_FILE_PATH, 'Organization Name,Work phone,Work email,Work web site,Work line #1,Work city,Work state,Work zip/postal code,Work country,Organization Tag 1,Background' );
 
   // load targets.csv
@@ -136,6 +136,7 @@
       $city = '';
       $state = '';
       $country = '';
+      $zip = '';
     }    
     
     // create notes about most likely contact pages
@@ -161,7 +162,14 @@
     $notes = str_replace( "'", '"', $notes ); // removes single quotes ( which there really shouldn't be anyway ), so we don't mess up the csv
     
     // generate basic results csv line and save
-    $csv_string = "\n".'"'.$Website->name.'","'.$primary_phone.'","'.$primary_email.'","'.$Website->base_url.'","'.$primary_address.'","'.$street.'","'.$city.'","'.$state.'","'.$zip.'","'.$country.'"';
+    if( $primary_phone != '' ) {
+      $kma_phone = preg_replace( '/[^0-9]/', '', $primary_phone );
+      if( strlen( $kma_phone ) == 10 )
+        $kma_phone = '1'.$kma_phone;
+    } else {
+      $kma_phone = '';
+    }
+    $csv_string = "\n".'"'.strtoupper( preg_replace( '/[^a-zA-Z0-9\s]/', '', $Website->name ) ).'","'.strtoupper( str_replace( 'www.', '', parse_url( $Website->base_url, PHP_URL_HOST ) ) ).'","'.$kma_phone.'","'.strtoupper( preg_replace( '/[^a-zA-Z0-9\s]/', '', $street ) ).'","'.strtoupper( preg_replace( '/[^a-zA-Z0-9\s]/', '', $city ) ).'","'.strtoupper( $state ).'","'.$zip.'"';
     file_put_contents( CSV_RESULTS_FILE_PATH, $csv_string, FILE_APPEND );
     
     // generate insightly csv line and save
