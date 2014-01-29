@@ -1,10 +1,12 @@
 <?php
   
   // target list settings
-  define( 'NEW_LINE_CHARACTER', "\r\n" );
+  // - sometimes it's "\n"
+  // - sometimes it's "\r\n"
+  define( 'NEW_LINE_CHARACTER', "\n" );
   
   // the max number of files to crawl per website
-  define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL',    250 );
+  define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL',    100 );
   
   // the tag to apply to each organization in insightly
   define( 'ORGANIZATION_TAG', 'logistics' );
