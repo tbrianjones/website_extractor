@@ -1,5 +1,5 @@
 <?php
-  
+    
   // load config
   require_once( 'config.php' );
   
@@ -7,7 +7,8 @@
   require_once( 'states_array.php' );
   
   // create fresh results.csv
-    file_put_contents( CSV_RESULTS_FILE_PATH, 'Business Name,URL,Telephone,Street,City,State,Zip' );
+  file_put_contents( CONTACT_PAGES_CSV_RESULTS_FILE_PATH, '"Website Name","Website URL","File URL","Emails"' );
+  file_put_contents( CSV_RESULTS_FILE_PATH, 'Business Name,URL,Telephone,Street,City,State,Zip' );
   file_put_contents( INSIGHTLY_CSV_RESULTS_FILE_PATH, 'Organization Name,Work phone,Work email,Work web site,Work line #1,Work city,Work state,Work zip/postal code,Work country,Organization Tag 1,Background' );
 
   // load targets.csv
@@ -65,17 +66,17 @@
     foreach( $webpages as $Webpage ) {
       if( count( $Webpage->emails ) > 0 ) {
         $emails = array_merge( $emails, $Webpage->emails );
-        $pages_with_emails[$Webpage->url] = count( $Webpage->emails );
+        $pages_with_emails[$Webpage->url] = count( array_unique( $Webpage->emails ) );
       }
       if( count( $Webpage->phones ) > 0 ) {
         $phones = array_merge( $phones, $Webpage->phones );
-        $pages_with_phones[$Webpage->url] = count( $Webpage->phones );
+        $pages_with_phones[$Webpage->url] = count( array_unique( $Webpage->phones ) );
       }
       if( count( $Webpage->addresses ) > 0 )
-        $addresses = array_merge( $addresses, $Webpage->addresses );  
+        $addresses = array_merge( $addresses, array_unique( $Webpage->addresses ) );  
     }
     
-    // extract most commonly occuriung email that matches the website url
+    // extract most commonly occuring email that matches the website url
     if( count( $emails ) > 0 ) {
       $emails = array_count_values( $emails );
       arsort( $emails );
@@ -164,8 +165,6 @@
     // generate basic results csv line and save
     if( $primary_phone != '' ) {
       $kma_phone = preg_replace( '/[^0-9]/', '', $primary_phone );
-      if( strlen( $kma_phone ) == 10 )
-        $kma_phone = '1'.$kma_phone;
     } else {
       $kma_phone = '';
     }
@@ -175,6 +174,14 @@
     // generate insightly csv line and save
     $csv_string = "\n".'"'.$Website->name.' '.rand( 1000000000, 9999999999 ).'","'.$primary_phone.'","'.$primary_email.'","'.$Website->base_url.'","'.$street.'","'.$city.'","'.$state.'","'.$zip.'","'.$country.'","'.ORGANIZATION_TAG.'","'.$notes.'"';
     file_put_contents( INSIGHTLY_CSV_RESULTS_FILE_PATH, $csv_string, FILE_APPEND );
+    
+    // generate csv containing pages with lots of emails
+    foreach( $pages_with_emails as $url => $count ) {
+      if( $count > 5 ) {
+        $string = '"'.$Website->name.'","'.$Website->base_url.'","'.$url.'","'.$count.'"';    
+        file_put_contents( CONTACT_PAGES_CSV_RESULTS_FILE_PATH, "\n".$string, FILE_APPEND );
+      }
+    }
     
     echo "\n  - email: $primary_email";
     echo "\n  - phone: $primary_phone";

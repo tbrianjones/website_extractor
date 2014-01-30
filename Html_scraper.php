@@ -108,8 +108,8 @@
 			if( $results > 0 ) {
 				$emails = $emails[0];
 				foreach( $emails as $email ){
-				  echo "\n  - email: $email";
-				  $this->Webpage->emails[] = $email;
+				  echo "\n  - email: $email ( ".strtolower( $email )." )";
+				  $this->Webpage->emails[] = strtolower( $email );
 				}
 			}
 			
