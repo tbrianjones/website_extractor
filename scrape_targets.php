@@ -30,9 +30,10 @@
   }
       
   // load dst api client
-  require_once( 'libraries/data_science_toolkit_php_api_client/dst_api_client.php' );
+/*  require_once( 'libraries/data_science_toolkit_php_api_client/dst_api_client.php' );
   $Dst = new Dst_api_client();
   $Dst->set_base_url();
+*/
   
   // load website class to store data in
   require_once( 'Website.php' );
@@ -103,7 +104,8 @@
       $primary_phone = '';
     
     // extract the most commonly occuring address
-    if( count( $addresses ) > 0 ) {
+    echo " ** ADDRESS EXTRACTION DISABLED **";
+    if( 0 AND count( $addresses ) > 0 ) {
       $addresses = array_count_values( $addresses );
       arsort( $addresses );
       var_dump( $addresses );
@@ -177,7 +179,7 @@
     
     // generate csv containing pages with lots of emails
     foreach( $pages_with_emails as $url => $count ) {
-      if( $count > 5 ) {
+      if( $count > 1 ) {
         $string = '"'.$Website->name.'","'.$Website->base_url.'","'.$url.'","'.$count.'"';    
         file_put_contents( CONTACT_PAGES_CSV_RESULTS_FILE_PATH, "\n".$string, FILE_APPEND );
       }
