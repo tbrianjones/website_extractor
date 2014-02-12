@@ -7,7 +7,7 @@
   require_once( 'states_array.php' );
   
   // create fresh results.csv
-  file_put_contents( CONTACT_PAGES_CSV_RESULTS_FILE_PATH, '"Website Name","Website URL","File URL","Emails"' );
+  file_put_contents( CONTACT_PAGES_CSV_RESULTS_FILE_PATH, '"ID","Website Name","Website URL","File URL","Emails"' );
   file_put_contents( CSV_RESULTS_FILE_PATH, 'Business Name,URL,Telephone,Street,City,State,Zip' );
   file_put_contents( INSIGHTLY_CSV_RESULTS_FILE_PATH, 'Organization Name,Work phone,Work email,Work web site,Work line #1,Work city,Work state,Work zip/postal code,Work country,Organization Tag 1,Background' );
 
@@ -19,12 +19,13 @@
   $contents = explode( NEW_LINE_CHARACTER, $contents );
   foreach( $contents as $content ) {
     $content = explode( '","', $content );
-    $target['name'] = trim( $content[0], '"' );
-    if( ! parse_url( $content[1] ) ) {
-      echo "\n ** Bad URL ( ".$content[1]." ): skipping this target.";
+    $target['id'] = trim( $content[0], '"' );
+    $target['name'] = trim( $content[1], '"' );
+    if( ! parse_url( $content[2] ) ) {
+      echo "\n ** Bad URL ( ".$content[2]." ): skipping this target.";
       continue;
     }
-    $url = parse_url( $content[1], PHP_URL_SCHEME ).'://'.parse_url( $content[1], PHP_URL_HOST );
+    $url = parse_url( $content[2], PHP_URL_SCHEME ).'://'.parse_url( $content[2], PHP_URL_HOST );
     $target['url'] = trim( $url, '"' );
     $targets[] = $target;
   }
@@ -44,6 +45,7 @@
     
     // populate website object
     $Website = new Website();
+    $Website->id = $target['id'];
     $Website->base_url = $target['url'];
     $Website->name = $target['name'];
     
@@ -180,7 +182,7 @@
     // generate csv containing pages with lots of emails
     foreach( $pages_with_emails as $url => $count ) {
       if( $count > 1 ) {
-        $string = '"'.$Website->name.'","'.$Website->base_url.'","'.$url.'","'.$count.'"';    
+        $string = '"'.$Website->id.'","'.$Website->name.'","'.$Website->base_url.'","'.$url.'","'.$count.'"';    
         file_put_contents( CONTACT_PAGES_CSV_RESULTS_FILE_PATH, "\n".$string, FILE_APPEND );
       }
     }

@@ -6,7 +6,7 @@
   define( 'NEW_LINE_CHARACTER', "\n" );
   
   // the max number of files to crawl per website
-  define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL',    50 );
+  define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL',    10 );
   
   // the tag to apply to each organization in insightly
   define( 'ORGANIZATION_TAG', 'logistics' );

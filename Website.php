@@ -6,6 +6,7 @@
   //
   class Website {
     
+    public $id;
     public $name;
     public $base_url;
     
