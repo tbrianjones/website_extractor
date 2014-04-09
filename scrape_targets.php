@@ -6,6 +6,47 @@
   // connect to email_scraper db
   $Db = new mysqli( EMAIL_SCRAPER_HOST, EMAIL_SCRAPER_USER, EMAIL_SCRAPER_PASS, EMAIL_SCRAPER_NAME );
 
+
+  // populate aws extractor queue
+  require_once( BASE_PATH . '/libraries/aws_php_sdk_v2/aws_client.php' );
+	$Sqs = Aws_client::get_sqs_connection_instance();
+	try {
+		$i = 0;
+		$total_companies_to_queue = count( $Companies->ids );
+		$entries = array();
+		foreach( $Companies->ids as $id ) {
+			$i++;
+			$company['company_id'] = $id;
+			$entry['Id'] = $id;
+			$entry['MessageBody'] = json_encode( $company );
+			$entries[] = $entry;
+			// max of ten entries can be batched at once
+			if(
+				count( $entries ) == 10
+				OR $i == $total_companies_to_queue 
+			) {
+				$Response = $Sqs->sendMessageBatch(
+					array(
+		    		'QueueUrl' => AWS_INDEXER_QUEUE_URL,
+						'Entries' => $entries
+					)
+				);
+				$entries = array();
+			}
+		}
+
+	} catch ( Exception $e ) {
+		throw new Internal_resource_exception( 'Extractor SQS sendMessageBatch failed: ' . $e->getMessage() );
+	}
+	echo 'The Indexer Queue has been populated.';
+
+
+
+
+
+
+
+
   // load targets from database
   //
   //  - skip targets that have already been crawled ( already have emails in the emails table )

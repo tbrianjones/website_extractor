@@ -1,10 +1,10 @@
 <?php
   
   // email_scraper database info
-  define( 'EMAIL_SCRAPER_HOST', 'email-scraper.cw0tm7tgwtd4.us-east-1.rds.amazonaws.com' );
-  define( 'EMAIL_SCRAPER_USER', 'scraper' );
-  define( 'EMAIL_SCRAPER_PASS', 'kTj6ujse' );
-  define( 'EMAIL_SCRAPER_NAME', 'email_scraper' );
+  define( 'EMAIL_SCRAPER_HOST', '' );
+  define( 'EMAIL_SCRAPER_USER', '' );
+  define( 'EMAIL_SCRAPER_PASS', '' );
+  define( 'EMAIL_SCRAPER_NAME', '' );
   
   // the max number of files to crawl per website
   define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL',    10 );
@@ -22,5 +22,25 @@
   define( 'CURL_MAX_DOWNLOAD_SIZE',       1000000 ); // bytes ( eg. 5000000 is 5mb ) - actually functions as mark as junk if over this size filter
   define( 'CURL_MAX_HTML_DOWNLOAD_SIZE',  150000 ); // bytes ( eg. 5000000 is 5mb ) - actually functions as mark as junk if over this size filter
   define( 'CURL_USER_AGENT',              'Web Crawler' );
+  
+  
+  // --- AMAZON AWS -----------------------------------------------------------
+
+
+	// amazon developers key for jones' account
+	define( 'AWS_KEY', '' );
+
+	// amazon developers secret key for jones' account
+	define( 'AWS_SECRET_KEY', '' );
+
+	// amazon region
+	define( 'AWS_REGION', 'us-east-1' ); // s3-ap-southeast-1.amazonaws.com
+	
+	// amazon SQS queue of companies to crawl
+	//	*** this queue must exist or all requests to SQS will fail
+	define( 'AWS_CRAWLER_QUEUE',                                '' );
+	define( 'AWS_CRAWLER_QUEUE_URL',                            '' );
+	define( 'AWS_CRAWLER_DEFAULT_VISIBILITY_TIMEOUT_SECONDS',   1800 );   // this should match the settings in the sqs queue
+	define( 'AWS_CRAWLER_MESSAGE_RETENTION_PERIOD_SECONDS',     14400 );  // this should match the settings in the sqs queue
   
 ?>
