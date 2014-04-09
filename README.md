@@ -10,7 +10,11 @@ Website Data Extractor
 
 
 ### Using This Tool
-- make sure your settings are correct ( config.php )
+- create `config.php` from `config.example.php`.
+- make sure your settings are correct in `config.php`.
+
+*this is wrong withint he email extractor branch*
+*we're using amazon sqs and a database of urls to trigger this extractor now*
 - put a list of company names and urls into the targets.csv file.
   - names in column a and urls in column b
   - generally excel fucks shit up when creating csvs, so use numbers or some other basic csv editor ( or just a text editor )

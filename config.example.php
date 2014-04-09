@@ -1,5 +1,7 @@
 <?php
   
+  define( 'BASE_PATH', '/data/extractor/' );
+  
   // email_scraper database info
   define( 'EMAIL_SCRAPER_HOST', '' );
   define( 'EMAIL_SCRAPER_USER', '' );
@@ -38,9 +40,9 @@
 	
 	// amazon SQS queue of companies to crawl
 	//	*** this queue must exist or all requests to SQS will fail
-	define( 'AWS_CRAWLER_QUEUE',                                '' );
-	define( 'AWS_CRAWLER_QUEUE_URL',                            '' );
-	define( 'AWS_CRAWLER_DEFAULT_VISIBILITY_TIMEOUT_SECONDS',   1800 );   // this should match the settings in the sqs queue
-	define( 'AWS_CRAWLER_MESSAGE_RETENTION_PERIOD_SECONDS',     14400 );  // this should match the settings in the sqs queue
+	define( 'AWS_WEBSITE_EXTRACTOR_QUEUE',                                '' );
+	define( 'AWS_WEBSITE_EXTRACTOR_QUEUE_URL',                            '' );
+	define( 'AWS_WEBSITE_EXTRACTOR_DEFAULT_VISIBILITY_TIMEOUT_SECONDS',   1800 );   // this should match the settings in the sqs queue
+	define( 'AWS_WEBSITE_EXTRACTOR_MESSAGE_RETENTION_PERIOD_SECONDS',     14400 );  // this should match the settings in the sqs queue
   
 ?>
