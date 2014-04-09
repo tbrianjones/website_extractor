@@ -1,9 +1,10 @@
 <?php
   
-  // target list settings
-  // - sometimes it's "\n"
-  // - sometimes it's "\r\n"
-  define( 'NEW_LINE_CHARACTER', "\n" );
+  // email_scraper database info
+  define( 'EMAIL_SCRAPER_HOST', 'email-scraper.cw0tm7tgwtd4.us-east-1.rds.amazonaws.com' );
+  define( 'EMAIL_SCRAPER_USER', 'scraper' );
+  define( 'EMAIL_SCRAPER_PASS', 'kTj6ujse' );
+  define( 'EMAIL_SCRAPER_NAME', 'email_scraper' );
   
   // the max number of files to crawl per website
   define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL',    10 );

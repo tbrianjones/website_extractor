@@ -24,8 +24,8 @@
       // extract data
       $this->scrape_links();
       $this->scrape_emails();
-      $this->scrape_phones();
-      $this->scrape_addresses();
+      //$this->scrape_phones();
+      //$this->scrape_addresses();
       
       // return updated webpage object
       return $this->Webpage;
@@ -462,6 +462,7 @@
 		//	examples:
 		//		- www.domain.com returns domain.com
 		//		- products.domain.com returns domain.com
+		//    - domain.com returns domain.com
 		//
 		private function get_domain_from_url(
 			$url
@@ -469,7 +470,10 @@
 			$parsed_url = parse_url( $url );
 			$host_array = explode( '.', $parsed_url['host'] );
 			$host_array = array_reverse( $host_array );
-			$domain = $host_array[1] . '.' . $host_array[0];
+			if( isset( $host_array[1] ) )
+        $domain = $host_array[1] . '.' . $host_array[0];
+      else
+        $domain = $host_array[0];
 			return strtolower( $domain );
 		}
     
