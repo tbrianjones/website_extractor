@@ -2,14 +2,6 @@
     
   // load config
   require_once( 'config.php' );
-  
-  // include states array for address translation below
-  require_once( 'states_array.php' );
-  
-  // create fresh results.csv
-  file_put_contents( CONTACT_PAGES_CSV_RESULTS_FILE_PATH, '"ID","Website Name","Website URL","File URL","Emails"' );
-  file_put_contents( CSV_RESULTS_FILE_PATH, 'Business Name,URL,Telephone,Street,City,State,Zip' );
-  file_put_contents( INSIGHTLY_CSV_RESULTS_FILE_PATH, 'Organization Name,Work phone,Work email,Work web site,Work line #1,Work city,Work state,Work zip/postal code,Work country,Organization Tag 1,Background' );
 
   // load targets.csv
   $contents = file_get_contents( 'targets.csv' );
