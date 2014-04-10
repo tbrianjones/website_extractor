@@ -2,135 +2,195 @@
     
   // load config
   require_once( 'config.php' );
-
-  // connect to email_scraper db
-  $Db = new mysqli( EMAIL_SCRAPER_HOST, EMAIL_SCRAPER_USER, EMAIL_SCRAPER_PASS, EMAIL_SCRAPER_NAME );
-
-
-  // --- get next target from sqs, or populate the queue if empty -----------------
   
+  // include states array for address translation below
+  require_once( 'states_array.php' );
+  
+  // create fresh results.csv
+  file_put_contents( CONTACT_PAGES_CSV_RESULTS_FILE_PATH, '"ID","Website Name","Website URL","File URL","Emails"' );
+  file_put_contents( CSV_RESULTS_FILE_PATH, 'Business Name,URL,Telephone,Street,City,State,Zip' );
+  file_put_contents( INSIGHTLY_CSV_RESULTS_FILE_PATH, 'Organization Name,Work phone,Work email,Work web site,Work line #1,Work city,Work state,Work zip/postal code,Work country,Organization Tag 1,Background' );
 
-  // get next target to crawl
-  require_once( 'Amazon_sqs.php' );
-  
-  $Sqs = new Amazon_sqs();
-  $target = $Sqs->get_message();
-  
-  // target was returned
-  if( $target ) {
-    // do nothing ... just continue with this target
-  
-  // queue was empty, so try to populate it
-  } else {
-    
-    // sleep for a random amount of time between 5 and 20 seconds
-    //
-    //  - then we check for messages in the queue again
-    //  - if we find some we can avoid populating the queue ( means another process already did )
-    //  - this keeps all the processors from trying to populate the queue at the same time when it's empty
-    //
-    $seconds = rand( 5, 20 );
-    echo "\n\n -- sleeping for $seconds seconds ( rand between 5 and 20 )\n  - so every process doesn't try to populate the queue at the same time";
-    sleep( $seconds );
-    $target = $Sqs->get_message();
-    if( $target ) {
-      // do nothing ... just continue with this target
-    } else {
-    
-      // load targets from database
-      //
-      //  - skip targets that have already been crawled ( already have emails in the emails table )
-      //  - these either completed or broke midway
-      //  - this allows us to kill a crawler server and it'll start back up where it left off
-      //    - it will lose the last company it was processing only if those emails started writing to the db
-      //
-      echo "\n\n -- populating queue with target urls to process";
-      $sql = "SELECT id, url
-              FROM websites
-              WHERE
-                (
-    							queued_for_crawling = 0
-    							OR(
-    								queued_for_crawling = 1
-    								AND last_queued_for_crawling < DATE_SUB( NOW(), INTERVAL ".( AWS_WEBSITE_EXTRACTOR_MESSAGE_RETENTION_PERIOD_SECONDS + AWS_WEBSITE_EXTRACTOR_DEFAULT_VISIBILITY_TIMEOUT_SECONDS )." SECOND )
-    							)
-    						)
-                AND id NOT IN(
-                  SELECT distinct website_id
-                  FROM emails
-                )
-              LIMIT 1000";
-      $Query = $Db->query( $sql );
-      if( $Query ) {
-        while( $Row = $Query->fetch_object() ) {
-          $target['id'] = $Row->id;
-          $url = parse_url( $Row->url, PHP_URL_SCHEME ).'://'.parse_url( $Row->url, PHP_URL_HOST );
-          $target['url'] = trim( $url, '"' );
-          $targets[] = $target;
-        }
-      }
-      if( $Sqs->populate_queue( $targets ) ) {
-        echo "\n -- updating websites in the database as queued for processing";
-        $Db->autocommit( FALSE );
-        foreach( $targets as $target ) {
-          // update company in master db
-      		$sql = "UPDATE websites
-      		        SET
-      		          queued_for_processing = 1,
-      		          last_queued_for_processing = NOW()
-      		        WHERE id = ".$target['id'];
-          $Query = $Db->query( $sql );
-        }
-        $this->Db->commit();
-  			$this->Db->autocommit( TRUE );
-        die( 'Website Extractor SQS Queue populated. No website was processed.' );
-      } else {
-        die( 'Website Extractor SQS Queue failed to populate. No website was processed.' );
-      }
-    } 
+  // load targets.csv
+  $contents = file_get_contents( 'targets.csv' );
+  // replace stupid angled double quotes
+  $contents = str_replace( '“', '"', $contents );
+  $contents = str_replace( '”', '"', $contents );
+  $contents = explode( NEW_LINE_CHARACTER, $contents );
+  foreach( $contents as $content ) {
+    $content = explode( '","', $content );
+    $target['id'] = trim( $content[0], '"' );
+    $target['name'] = trim( $content[1], '"' );
+    if( ! parse_url( $content[2] ) ) {
+      echo "\n ** Bad URL ( ".$content[2]." ): skipping this target.";
+      continue;
+    }
+    $url = parse_url( $content[2], PHP_URL_SCHEME ).'://'.parse_url( $content[2], PHP_URL_HOST );
+    $target['url'] = trim( $url, '"' );
+    $targets[] = $target;
   }
+      
+  // load dst api client
+/*  require_once( 'libraries/data_science_toolkit_php_api_client/dst_api_client.php' );
+  $Dst = new Dst_api_client();
+  $Dst->set_base_url();
+*/
   
-  
-  // --- process the target -------------------------------------------------------
-  
-  
-  // populate website object
+  // load website class to store data in
   require_once( 'Website.php' );
-  $Website = new Website();
-  $Website->id = $target['id'];
-  $Website->base_url = $target['url'];
-  
-  // crawl website
+
+  // process each target
   require( 'Crawler.php' );
-  $Crawler = new Crawler( $Website );
-  $Crawler->go( CRAWLER_MAX_WEBPAGES_TO_CRAWL );
-  
-  // compile data from all webpages crawled on this website and write to db
-  echo "\n\n -- Saving Emails to `email_scraper` Database";
-  $webpages = $Website->get_webpages();
-  foreach( $webpages as $Webpage ) {
-    if( count( $Webpage->emails ) > 0 ) {
-      $emails = array_count_values( $Webpage->emails );
+  foreach( $targets as $target ) {
+    
+    // populate website object
+    $Website = new Website();
+    $Website->id = $target['id'];
+    $Website->base_url = $target['url'];
+    $Website->name = $target['name'];
+    
+    // crawl website
+    $Crawler = new Crawler( $Website );
+    $Crawler->go( CRAWLER_MAX_WEBPAGES_TO_CRAWL );
+    
+    
+    // --- process data from $Website object and write to csv ---
+    
+    
+    echo "\n\n--- Calculating Website Data ---";
+    
+    // compile data from all webpages crawled on this website
+    $webpages = $Website->get_webpages();
+    $emails = array();
+    $addresses = array();
+    $phones = array();
+    $pages_with_emails = array();
+    $pages_with_phones = array();
+    foreach( $webpages as $Webpage ) {
+      if( count( $Webpage->emails ) > 0 ) {
+        $emails = array_merge( $emails, $Webpage->emails );
+        $pages_with_emails[$Webpage->url] = count( array_unique( $Webpage->emails ) );
+      }
+      if( count( $Webpage->phones ) > 0 ) {
+        $phones = array_merge( $phones, $Webpage->phones );
+        $pages_with_phones[$Webpage->url] = count( array_unique( $Webpage->phones ) );
+      }
+      if( count( $Webpage->addresses ) > 0 )
+        $addresses = array_merge( $addresses, array_unique( $Webpage->addresses ) );  
+    }
+    
+    // extract most commonly occuring email that matches the website url
+    if( count( $emails ) > 0 ) {
+      $emails = array_count_values( $emails );
+      arsort( $emails );
+      var_dump( $emails );
+      $primary_email = key( $emails ); // if no email with the same domain is found, use the most common one
       foreach( $emails as $email => $count ) {
-        echo "\n  - $email ($count)";
-        $sql = "INSERT INTO emails( website_id, url, email, count )
-                VALUES( ".$Website->id.", '".$Db->real_escape_string( $Webpage->url )."', '".$Db->real_escape_string( $email )."', $count )";
-        $Db->query( $sql );
+        $parts = explode( '@', $email );
+        $email_domain = $parts[1];
+        if( strpos( $Webpage->url, $email_domain ) ) {
+          $primary_email = $email;
+          break;
+        }
+      }
+    } else
+      $primary_email = '';
+    
+    // extract the most commonly occuring phone number
+    if( count( $phones ) > 0 ) {
+      $phones = array_count_values( $phones );
+      arsort( $phones );
+      var_dump( $phones );
+      $primary_phone = key( $phones );
+    } else
+      $primary_phone = '';
+    
+    // extract the most commonly occuring address
+    echo " ** ADDRESS EXTRACTION DISABLED **";
+    if( 0 AND count( $addresses ) > 0 ) {
+      $addresses = array_count_values( $addresses );
+      arsort( $addresses );
+      var_dump( $addresses );
+      $primary_address = key( $addresses );
+      $parts = $Dst->street2coordinates( $primary_address );
+      $parts = json_decode( $parts, TRUE );
+      $parts = current( $parts );
+      if( isset( $parts['street_address'] ) )
+        $street = $parts['street_address'];
+      else
+        $street = '';
+      if( isset( $parts['locality'] ) )
+        $city = $parts['locality'];
+      else
+        $city = '';
+      if( isset( $parts['region'] ) )
+        $state = $states[ $parts['region'] ];
+      else
+        $state = '';
+      if( isset( $parts['country_name'] ) )
+        $country = $parts['country_name'];
+      else
+        $country = '';
+      // extract zip
+      $zip = substr( $primary_address, -5 );
+      if( ! is_numeric( $zip ) )
+        $zip = '';
+    } else {
+      $primary_address = '';
+      $street = '';
+      $city = '';
+      $state = '';
+      $country = '';
+      $zip = '';
+    }    
+    
+    // create notes about most likely contact pages
+    arsort( $pages_with_phones );
+    arsort( $pages_with_emails );
+    $i = 0;
+    $notes = '';
+    foreach( $pages_with_emails as $url => $count ) {
+      $notes .= "Webpage with $count Emails\n$url\n\n";
+      $i++;
+      if( $i == 5 )
+        break(1);
+    }
+    $i = 0;
+    foreach( $pages_with_phones as $url => $count ) {
+      $notes .= "Webpage with $count Phone Numbers\n$url\n\n";
+      $i++;
+      if( $i == 5 )
+        break(1);
+    }
+    if( $primary_address != '' )
+      $notes .= "Primary Address\n$primary_address";
+    $notes = str_replace( "'", '"', $notes ); // removes single quotes ( which there really shouldn't be anyway ), so we don't mess up the csv
+    
+    // generate basic results csv line and save
+    if( $primary_phone != '' ) {
+      $kma_phone = preg_replace( '/[^0-9]/', '', $primary_phone );
+    } else {
+      $kma_phone = '';
+    }
+    $csv_string = "\n".'"'.strtoupper( preg_replace( '/[^a-zA-Z0-9\s]/', '', $Website->name ) ).'","'.strtoupper( str_replace( 'www.', '', parse_url( $Website->base_url, PHP_URL_HOST ) ) ).'","'.$kma_phone.'","'.strtoupper( preg_replace( '/[^a-zA-Z0-9\s]/', '', $street ) ).'","'.strtoupper( preg_replace( '/[^a-zA-Z0-9\s]/', '', $city ) ).'","'.strtoupper( $state ).'","'.$zip.'"';
+    file_put_contents( CSV_RESULTS_FILE_PATH, $csv_string, FILE_APPEND );
+    
+    // generate insightly csv line and save
+    $csv_string = "\n".'"'.$Website->name.' '.rand( 1000000000, 9999999999 ).'","'.$primary_phone.'","'.$primary_email.'","'.$Website->base_url.'","'.$street.'","'.$city.'","'.$state.'","'.$zip.'","'.$country.'","'.ORGANIZATION_TAG.'","'.$notes.'"';
+    file_put_contents( INSIGHTLY_CSV_RESULTS_FILE_PATH, $csv_string, FILE_APPEND );
+    
+    // generate csv containing pages with lots of emails
+    foreach( $pages_with_emails as $url => $count ) {
+      if( $count > 1 ) {
+        $string = '"'.$Website->id.'","'.$Website->name.'","'.$Website->base_url.'","'.$url.'","'.$count.'"';    
+        file_put_contents( CONTACT_PAGES_CSV_RESULTS_FILE_PATH, "\n".$string, FILE_APPEND );
       }
     }
-  }
-  
-  
-  // --- delete message as target was succesfully processed -----------------------
-  
-  
-  // delete message
-  $Sqs->delete_message();
     
-  // update website as not processing in the db
-	$sql = "UPDATE websites
-	        SET queued_for_processing = 0
-	        WHERE id = ".$Website->id;
-  $Query = $Db->query( $sql );
+    echo "\n  - email: $primary_email";
+    echo "\n  - phone: $primary_phone";
+    echo "\n  - address: $primary_address";
+
+  }
 
 ?>
