@@ -41,6 +41,19 @@ Using This Tool
 - targets in the queue will be picked up later if they expire
 - companies that are marked as queued for processing in the db will be picked up later if they failed after the message expiration time of the queue.
 - use spot instances to save money ( they can die and everything should be fine )
+
+
+Infrastructure Notes
+--------------------
+- processing 2.5M websites in two days
+  - max of 100 pages scraped per site
+  - delay between requests: 0 sec
+  - 8 c3.xl instances running 110 processes each
+  - m3.med rds instance
+  - cost of about $150
+  - stats on machines
+    - the crawler machines are maxed at about 90% cpu
+    - the rds is at about 25% cpu and 250 writes/sec
   
   
 Dev Notes
