@@ -49,16 +49,13 @@
               FROM websites
               WHERE
                 (
-    							queued_for_crawling = 0
+    							queued_for_processing = 0
     							OR(
-    								queued_for_crawling = 1
-    								AND last_queued_for_crawling < DATE_SUB( NOW(), INTERVAL ".( AWS_WEBSITE_EXTRACTOR_MESSAGE_RETENTION_PERIOD_SECONDS + AWS_WEBSITE_EXTRACTOR_DEFAULT_VISIBILITY_TIMEOUT_SECONDS )." SECOND )
+    								queued_for_processing = 1
+    								AND last_queued_for_processing < DATE_SUB( NOW(), INTERVAL ".( AWS_WEBSITE_EXTRACTOR_MESSAGE_RETENTION_PERIOD_SECONDS + AWS_WEBSITE_EXTRACTOR_DEFAULT_VISIBILITY_TIMEOUT_SECONDS )." SECOND )
     							)
     						)
-                AND id NOT IN(
-                  SELECT distinct website_id
-                  FROM emails
-                )
+                AND processed = 0
               LIMIT 1000";
       $Query = $Db->query( $sql );
       if( $Query ) {
@@ -81,11 +78,11 @@
       		        WHERE id = ".$target['id'];
           $Query = $Db->query( $sql );
         }
-        $this->Db->commit();
-  			$this->Db->autocommit( TRUE );
-        die( 'Website Extractor SQS Queue populated. No website was processed.' );
+        $Db->commit();
+  			$Db->autocommit( TRUE );
+        die( "\n\n -- Website Extractor SQS Queue populated. No website was processed.\n\n" );
       } else {
-        die( 'Website Extractor SQS Queue failed to populate. No website was processed.' );
+        die( "\n\n -- Website Extractor SQS Queue failed to populate. No website was processed.\n\n" );
       }
     } 
   }
@@ -108,6 +105,7 @@
   // compile data from all webpages crawled on this website and write to db
   echo "\n\n -- Saving Emails to `email_scraper` Database";
   $webpages = $Website->get_webpages();
+  $Db->autocommit( FALSE );
   foreach( $webpages as $Webpage ) {
     if( count( $Webpage->emails ) > 0 ) {
       $emails = array_count_values( $Webpage->emails );
@@ -119,6 +117,8 @@
       }
     }
   }
+  $Db->commit();
+  $Db->autocommit( TRUE );
   
   
   // --- delete message as target was succesfully processed -----------------------
@@ -129,7 +129,10 @@
     
   // update website as not processing in the db
 	$sql = "UPDATE websites
-	        SET queued_for_processing = 0
+	        SET
+	          queued_for_processing = 0,
+	          processed = 1,
+	          last_processed = NOW()
 	        WHERE id = ".$Website->id;
   $Query = $Db->query( $sql );
 
