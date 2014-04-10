@@ -7,8 +7,8 @@
     public $Client; // the sqs cleint object
 
     // message data
-    private $crawler_queue_message_id;
-    private $crawler_queue_message_receipt_handle;
+    private $sqs_message_id;
+    private $sqs_message_receipt_handle;
     
     
     public function __construct() {
@@ -47,8 +47,8 @@
     		
     		  // format message data to return
     			$message = json_decode( $messages[0]['Body'], TRUE );
-    			$this->crawler_queue_message_id = $messages[0]['MessageId'];
-    			$this->crawler_queue_message_receipt_handle = $messages[0]['ReceiptHandle'];
+    			$this->sqs_message_id = $messages[0]['MessageId'];
+    			$this->sqs_message_receipt_handle = $messages[0]['ReceiptHandle'];
     
           // return message data
           return $message;
@@ -61,9 +61,21 @@
       
     }
     
+    // delete message from queue if SQS
     public function delete_message() {
       
-      return FALSE;
+			try {
+				$result = $this->Client->deleteMessage(
+					array(
+						'QueueUrl' => AWS_WEBSITE_EXTRACTOR_QUEUE_URL,
+						'ReceiptHandle' => $this->sqs_message_receipt_handle,
+					)
+				);
+			} catch ( Exception $e ) {
+				throw new Internal_resource_exception( 'Crawler SQS deleteMessage failed: ' . $e->getMessage() );
+			}
+      
+      return TRUE;
       
     }
     
