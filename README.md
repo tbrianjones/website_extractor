@@ -2,32 +2,49 @@ Website Data Extractor
 ======================
 
 
-### A Utility That
-- takes a .csv of urls as an input
-- crawls the sites
-- extracts basic info about each site ( including contact pages that exist )
-- puts all data into a csv for bulk import into Insightly
+What does this utility do?
+--------------------------
+- crawls urls that are stored in a database
+  - currenlty setup to be a remote amazon mysql rds
+- urls are read from this database and put into an amazon sqs queue
+- these urls are read from the queue and crawled / scraped
+- basic info is extracted from each website and stored in the database
+  - right now it's just pulling emails
 
 
-### Using This Tool
-- create `config.php` from `config.example.php`.
-- make sure your settings are correct in `config.php`.
+Using This Tool
+---------------
+- create `config.php` from `config.example.php`
+- make sure your settings are correct in `config.php`
+- make sure the remote database is created using the 'database.sql' file
+  - then populate with urls to process
+- `scrape_target.php` is the file used to process each website
+- data will be written to the database
 
-*this is wrong withint he email extractor branch*
-*we're using amazon sqs and a database of urls to trigger this extractor now*
-- put a list of company names and urls into the targets.csv file.
-  - names in column a and urls in column b
-  - generally excel fucks shit up when creating csvs, so use numbers or some other basic csv editor ( or just a text editor )
-- execute scrape_targets.php
-  - this will crawl all sites, extract data, and push the contents into results.csv
-- insightly.csv can be imported into insightly to create organizations to target
-  - go to the organizations tab
-  - click to import on right, near the top
-  - choose the results.csv file
-  - go to town
-
+### running one site at a time
+- simply execute `scrape_target.php` and one url will be processed
+  - the sqs queue will also be populated
+  - subsequent scrapes will use the queue, until it runs out. then it will be repopuulated
   
-### Dev Notes
+### running processes in parallel
+- install supervisord
+  - create a symlink from `/etc/supervisord.conf` to `BASE_PATH/external_configs/supervisord.conf`
+  - `sudo ln -s /data/extractor/external_configs/supervisord.conf /etc/supervisord.conf`
+- adjust the settings in `external_configs/supervisord.conf` to run the desired number of processors
+- run supervisord
+  - /usr/bin/supervidors
+  - then turn on the crawlers with `/usr/bin/supervisorctl`
+  
+### notes on parallel processing
+- the system should ahve no problem if `scrape_target.php` is killed, or has an error, or a server dies
+- data is written to a remote db
+- targets in the queue will be picked up later if they expire
+- companies that are marked as queued for processing in the db will be picked up later if they failed after the message expiration time of the queue.
+- use spot instances to save money ( they can die and everything should be fine )
+  
+  
+Dev Notes
+---------
 - Improve HTML Scraper to allow crawling of sites with JS redirects and Frames
   - recycle cortex crawler html_file_processor code for stuff below
 	- add frame scraper for links
