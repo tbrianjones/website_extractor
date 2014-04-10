@@ -7,7 +7,7 @@
 #
 # Host: email-scraper.cw0tm7tgwtd4.us-east-1.rds.amazonaws.com (MySQL 5.6.13)
 # Database: email_scraper
-# Generation Time: 2014-04-10 00:48:13 +0000
+# Generation Time: 2014-04-10 21:18:57 +0000
 # ************************************************************
 
 
@@ -47,9 +47,12 @@ CREATE TABLE `websites` (
   `url` varchar(255) NOT NULL DEFAULT '',
   `queued_for_processing` tinyint(1) NOT NULL,
   `last_queued_for_processing` datetime DEFAULT NULL,
+  `processed` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `last_processed` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `queued_for_processing` (`queued_for_processing`),
-  KEY `last_queued_for_processing` (`last_queued_for_processing`)
+  KEY `last_queued_for_processing` (`last_queued_for_processing`),
+  KEY `processed` (`processed`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 

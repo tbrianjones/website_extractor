@@ -80,9 +80,9 @@
         }
         $Db->commit();
   			$Db->autocommit( TRUE );
-        die( "\n\n -- Website Extractor SQS Queue populated. No website was processed.\n\n" );
+        die( "\n\n -- Website Extractor SQS Queue populated.\n  * No website was processed.\n\n" );
       } else {
-        die( "\n\n -- Website Extractor SQS Queue failed to populate. No website was processed.\n\n" );
+        die( "\n\n -- Website Extractor SQS Queue failed to populate.\n  * No website was processed.\n\n" );
       }
     } 
   }

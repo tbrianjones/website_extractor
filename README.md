@@ -45,16 +45,17 @@ Using This Tool
 
 Infrastructure Notes
 --------------------
-- processing 2.5M websites in two days
+- processing 2.5M websites in two days ( guess )
   - max of 100 pages scraped per site
-  - delay between requests: 0 sec
-  - 8 c3.xl instances running 110 processes each
+  - delay between requests: 1 sec
+    - adding sleep allows you to run more processes on that machine
+  - 8 c3.xl instances running 250 processes each
   - m3.med rds instance
   - cost of about $150
   - stats on machines
     - the crawler machines are maxed at about 90% cpu
     - the rds is at about 25% cpu and 250 writes/sec
-  
+      
   
 Dev Notes
 ---------
