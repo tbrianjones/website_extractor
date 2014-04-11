@@ -29,7 +29,7 @@
     //  - if we find some we can avoid populating the queue ( means another process already did )
     //  - this keeps all the processors from trying to populate the queue at the same time when it's empty
     //
-    $seconds = rand( 5, 20 );
+    $seconds = rand( 0, 1 );
     echo "\n\n -- sleeping for $seconds seconds ( rand between 5 and 20 )\n  - so every process doesn't try to populate the queue at the same time";
     sleep( $seconds );
     $target = $Sqs->get_message();
@@ -56,7 +56,7 @@
     							)
     						)
                 AND processed = 0
-              LIMIT 1000";
+              LIMIT 2500";
       $Query = $Db->query( $sql );
       if( $Query ) {
         while( $Row = $Query->fetch_object() ) {
