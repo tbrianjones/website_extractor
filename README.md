@@ -59,6 +59,8 @@ Infrastructure Notes
   
 Dev Notes
 ---------
+- reduce found emails on webpages to lowercase
+  - right now we record both ... emails are case-insensitive
 - Improve HTML Scraper to allow crawling of sites with JS redirects and Frames
   - recycle cortex crawler html_file_processor code for stuff below
 	- add frame scraper for links
