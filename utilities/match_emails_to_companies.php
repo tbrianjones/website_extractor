@@ -34,7 +34,7 @@
     
   // get all emails
   echo "\n\n -- Getting all emails from DB";
-  $sql = "SELECT DISTINCT email
+  $sql = "SELECT DISTINCT LOWER( email )
           FROM emails
           LIMIT 10000;";
   $Query = $Db->query( $sql );
