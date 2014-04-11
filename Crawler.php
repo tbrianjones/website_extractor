@@ -68,8 +68,6 @@
         $this->Website->update_webpage( $Webpage );
         $num_webpages_crawled++;
         $num_webpages_to_crawl = count( $this->Website->get_webpages() );
-        echo "\n\n ** Sleeping for ".CRAWLER_SLEEP_BETWEEN_DOWNLOADS.' seconds between requests to host.';
-        sleep( CRAWLER_SLEEP_BETWEEN_DOWNLOADS );
                 
       }
       

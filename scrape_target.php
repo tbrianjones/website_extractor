@@ -29,8 +29,8 @@
     //  - if we find some we can avoid populating the queue ( means another process already did )
     //  - this keeps all the processors from trying to populate the queue at the same time when it's empty
     //
-    $seconds = rand( 0, 1 );
-    echo "\n\n -- sleeping for $seconds seconds ( rand between 5 and 20 )\n  - so every process doesn't try to populate the queue at the same time";
+    $seconds = rand( 0, 10 );
+    echo "\n\n -- sleeping for $seconds seconds ( rand between 0 and 10 )\n  - so every process doesn't try to populate the queue at the same time";
     sleep( $seconds );
     $target = $Sqs->get_message();
     if( $target ) {
@@ -45,6 +45,7 @@
       //    - it will lose the last company it was processing only if those emails started writing to the db
       //
       echo "\n\n -- populating queue with target urls to process";
+      $Db->autocommit( FALSE );
       $sql = "SELECT id, url
               FROM websites
               WHERE
@@ -56,7 +57,8 @@
     							)
     						)
                 AND processed = 0
-              LIMIT 2500";
+              LIMIT 2500
+              FOR UPDATE";
       $Query = $Db->query( $sql );
       if( $Query ) {
         while( $Row = $Query->fetch_object() ) {
@@ -68,7 +70,6 @@
       }
       if( $Sqs->populate_queue( $targets ) ) {
         echo "\n -- updating websites in the database as queued for processing";
-        $Db->autocommit( FALSE );
         foreach( $targets as $target ) {
           // update company in master db
       		$sql = "UPDATE websites
@@ -105,7 +106,6 @@
   // compile data from all webpages crawled on this website and write to db
   echo "\n\n -- Saving Emails to `email_scraper` Database";
   $webpages = $Website->get_webpages();
-  $Db->autocommit( FALSE );
   foreach( $webpages as $Webpage ) {
     if( count( $Webpage->emails ) > 0 ) {
       $emails = array_count_values( $Webpage->emails );
@@ -117,8 +117,6 @@
       }
     }
   }
-  $Db->commit();
-  $Db->autocommit( TRUE );
   
   
   // --- delete message as target was succesfully processed -----------------------
