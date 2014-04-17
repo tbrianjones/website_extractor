@@ -13,6 +13,9 @@
   define( 'EMAIL_SCRAPER_PASS', '' );
   define( 'EMAIL_SCRAPER_NAME', '' );
   
+  // max consecutive non-200 http responses before killing crawl
+  define( 'MAX_CONSECUTIVE_NON_200_HTTP_RESPONSES', 50 );
+  
   // the max number of files to crawl per website
   define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL',    10 );
 

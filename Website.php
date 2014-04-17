@@ -19,6 +19,10 @@
     
     public function __construct() {}
     
+    public function get_next_webpage() {
+      return array_shift( $this->webpages );
+    }
+    
     public function get_webpages() {
       return $this->webpages;
     }
