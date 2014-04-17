@@ -27,6 +27,9 @@
       //$this->scrape_phones();
       //$this->scrape_addresses();
       
+      // delete the html, as we won't use it again ... saves memory, maybe - TBJ
+      unset( $this->website->html );
+      
       // return updated webpage object
       return $this->Webpage;
       

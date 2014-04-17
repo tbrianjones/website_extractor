@@ -2,6 +2,11 @@
   
   define( 'BASE_PATH', '/data/extractor/' );
   
+  // process memory
+  define( 'OUTPUT_MEMORY_USAGE', TRUE );
+  define( 'PHP_ALLOCATED_MEMORY', 128 ); // megabytes - default on ec2 php is 128
+  ini_set( 'memory_limit', PHP_ALLOCATED_MEMORY.'M' );
+  
   // email_scraper database info
   define( 'EMAIL_SCRAPER_HOST', '' );
   define( 'EMAIL_SCRAPER_USER', '' );

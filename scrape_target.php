@@ -1,5 +1,13 @@
 <?php
-    
+  
+  //
+  // scrapes one target at a time
+  //
+  //  - pulls targets from sqs
+  //  - if the queue is empty, this script will fill it then die
+  //  - increase memory if crawling really deeply ( not sure how much )
+  //
+  
   // load config
   require_once( 'config.php' );
 
@@ -92,6 +100,10 @@
   // --- process the target -------------------------------------------------------
   
   
+  // force a specific target
+  $target['id'] = 6;
+  $target['url'] = 'http://DirectionsMag.com';
+  
   // populate website object
   require_once( 'Website.php' );
   $Website = new Website();
@@ -106,10 +118,17 @@
   // compile data from all webpages crawled on this website and write to db
   echo "\n\n -- Saving Emails to `email_scraper` Database";
   $webpages = $Website->get_webpages();
+  $Db->autocommit( FALSE );
+  $i = 0;
   foreach( $webpages as $Webpage ) {
     if( count( $Webpage->emails ) > 0 ) {
       $emails = array_count_values( $Webpage->emails );
       foreach( $emails as $email => $count ) {
+        $i++;
+        if( $i == 250 ) {
+          $Db->commit();
+          $i = 0;
+        }
         echo "\n  - $email ($count)";
         $sql = "INSERT INTO emails( website_id, url, email, count )
                 VALUES( ".$Website->id.", '".$Db->real_escape_string( $Webpage->url )."', '".$Db->real_escape_string( $email )."', $count )";
@@ -117,6 +136,8 @@
       }
     }
   }
+  $Db->commit();
+  $Db->autocommit( TRUE );
   
   
   // --- delete message as target was succesfully processed -----------------------

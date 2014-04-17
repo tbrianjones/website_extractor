@@ -39,12 +39,28 @@
       $num_webpages_to_crawl = count( $this->Website->get_webpages() );
       while( $num_webpages_crawled < $num_webpages_to_crawl ) {
         
+        // output memory usage
+        if( OUTPUT_MEMORY_USAGE ) {
+          echo "\n\n -- Memory Usage";
+          echo "\n  - ".memory_get_usage();
+          echo "\n  - ".memory_get_usage( TRUE );
+          echo "\n  - ".memory_get_peak_usage();
+          echo "\n  - ".memory_get_peak_usage( TRUE );
+        }
+        
         // stop crawling when specified limit is reached
         if( $num_webpages_scraped == $limit ) {
           echo "\n\n ** Crawler processed specified max number of files .. crawling stopped.";
           break( 1 );
         }
         
+        // stop crawling right before the process runs out of memory
+        if( memory_get_peak_usage() > (PHP_ALLOCATED_MEMORY-1)*1048576 ) {
+          echo "\n\n ** Crawler about to run out of memory .. crawling stopped ( so we can save processed data ).";
+          break( 1 );
+        }
+        
+        // process next webpage
         $webpages = $this->Website->get_webpages();
         $webpages = array_slice( $webpages, $num_webpages_crawled );
         $Webpage = current( $webpages );
