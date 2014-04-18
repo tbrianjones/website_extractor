@@ -19,6 +19,12 @@
   // connect to email_scraper db
   $Db = new mysqli( EMAIL_SCRAPER_HOST, EMAIL_SCRAPER_USER, EMAIL_SCRAPER_PASS, EMAIL_SCRAPER_NAME );
   
+  // get bad domains
+  $contents = file_get_contents( 'free_email_providers.txt' );
+  $domains = explode( "\n", $contents );
+  foreach( $domains as $domain )
+    $free_email_domains[ $domain ] = 1;
+  
   // get all company domains and store into $domains
   echo "\n\n -- Generating list of cortex company domains and ids";
   $sql = "SELECT id, url
@@ -29,14 +35,17 @@
     $parts = explode( '.', $host );
     $parts = array_reverse( $parts );
     $domain = $parts[1].'.'.$parts[0];
-    $domains[$domain]['ids'][] = $Row->id; // add an array here of ids that match this domain to cover multiple companies
+    if( ! isset( $free_email_domains[ $domain ] ) )
+      $domains[$domain]['ids'][] = $Row->id; // add an array here of ids that match this domain to cover multiple companies
+    else
+      echo "\n ** free email domain: $domain";
   }
-    
+  echo "\n\n -- total good company domains: ".count( $domains );
+
   // get all emails
   echo "\n\n -- Getting all emails from DB";
-  $sql = "SELECT DISTINCT LOWER( email )
-          FROM emails
-          LIMIT 10000;";
+  $sql = "SELECT DISTINCT LOWER( email ) as email
+          FROM emails;";
   $Query = $Db->query( $sql );
   while( $Row = $Query->fetch_object() ) {
     $email = strtolower( $Row->email );
