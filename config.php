@@ -1,12 +1,23 @@
 <?php
+
+
+  // --- GENERAL SETTINGS -------------------------------------------------
+
+  
+  // what to extract
+  define( 'EXTRACT_ADDRESSES',    1 ); // extract addresses?  0-no, 1-yes
+
+  // the max number of files to crawl per website
+  define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL',    10 );
+  
+
+  // --- ADVANCED SETTINGS ------------------------------------------------
+  
   
   // target list settings
   // - sometimes it's "\n"
   // - sometimes it's "\r\n"
   define( 'NEW_LINE_CHARACTER', "\n" );
-  
-  // the max number of files to crawl per website
-  define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL',    10 );
   
   // the tag to apply to each organization in insightly
   define( 'ORGANIZATION_TAG', 'logistics' );
@@ -17,7 +28,7 @@
   define( 'CONTACT_PAGES_CSV_RESULTS_FILE_PATH', 'contact_pages.csv' );
 
   // crawler sleep
-  define( 'CRAWLER_SLEEP_BETWEEN_DOWNLOADS',      0 );      // seconds to sleep between downloads
+  define( 'CRAWLER_SLEEP_BETWEEN_DOWNLOADS',      1 );      // seconds to sleep between downloads
 
   // output processing messages
   define( 'CRAWLER_OUTPUT_DOWNLOAD_MESSAGES',     FALSE );  // output messages about downloading files processing

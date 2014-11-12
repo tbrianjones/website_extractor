@@ -1,4 +1,4 @@
 Target Scrapers
 ===============
 
-These scrapers pull Target Names and URLs and format the results in a .csv for use with the Website Extractor.
+These scrapers pull Target Names and URLs from Directory Sites and format the results in a .csv for use with the Website Extractor.

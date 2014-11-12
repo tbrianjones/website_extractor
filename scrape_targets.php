@@ -18,23 +18,25 @@
   $contents = str_replace( '”', '"', $contents );
   $contents = explode( NEW_LINE_CHARACTER, $contents );
   foreach( $contents as $content ) {
-    $content = explode( '","', $content );
+    $content = explode( ',"', $content );
     $target['id'] = trim( $content[0], '"' );
     $target['name'] = trim( $content[1], '"' );
-    if( ! parse_url( $content[2] ) ) {
-      echo "\n ** Bad URL ( ".$content[2]." ): skipping this target.";
+    $url = trim( $content[2], '"' );
+    if( ! parse_url( $url ) ) {
+      echo "\n ** Bad URL ( ".$url." ): skipping this target.";
       continue;
     }
-    $url = parse_url( $content[2], PHP_URL_SCHEME ).'://'.parse_url( $content[2], PHP_URL_HOST );
+    $url = parse_url( $url, PHP_URL_SCHEME ).'://'.parse_url( $url, PHP_URL_HOST );
     $target['url'] = trim( $url, '"' );
     $targets[] = $target;
   }
-      
+        
   // load dst api client
-/*  require_once( 'libraries/data_science_toolkit_php_api_client/dst_api_client.php' );
-  $Dst = new Dst_api_client();
-  $Dst->set_base_url();
-*/
+  if( EXTRACT_ADDRESSES ) {
+    require_once( 'libraries/data_science_toolkit_php_api_client/dst_api_client.php' );
+    $Dst = new Dst_api_client();
+    $Dst->set_base_url();
+  }
   
   // load website class to store data in
   require_once( 'Website.php' );
@@ -107,7 +109,7 @@
     
     // extract the most commonly occuring address
     echo " ** ADDRESS EXTRACTION DISABLED **";
-    if( 0 AND count( $addresses ) > 0 ) {
+    if( EXTRACT_ADDRESSES AND count( $addresses ) > 0 ) {
       $addresses = array_count_values( $addresses );
       arsort( $addresses );
       var_dump( $addresses );
