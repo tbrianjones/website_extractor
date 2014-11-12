@@ -68,7 +68,7 @@
         $this->Website->update_webpage( $Webpage );
         $num_webpages_crawled++;
         $num_webpages_to_crawl = count( $this->Website->get_webpages() );
-        sleep( CRAWLER_SLEEP_BETWEEN_DOWNLOADS );
+        usleep( CRAWLER_SLEEP_BETWEEN_DOWNLOADS );
                 
       }
       

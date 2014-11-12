@@ -11,7 +11,7 @@
   define( 'EXTRACT_ADDRESSES', 1 ); // extract addresses?  0-no, 1-yes
 
   // the max number of files to crawl per website
-  define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL', 3 );
+  define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL', 50 );
   
 
   // --- ADVANCED SETTINGS ------------------------------------------------
@@ -28,7 +28,7 @@
   
 
   // crawler sleep
-  define( 'CRAWLER_SLEEP_BETWEEN_DOWNLOADS',      1 );      // seconds to sleep between downloads
+  define( 'CRAWLER_SLEEP_BETWEEN_DOWNLOADS', 250000 ); // microseconds to sleep between downloads ( 2,000,000 = 2sec )
 
   // output processing messages
   define( 'CRAWLER_OUTPUT_DOWNLOAD_MESSAGES',     FALSE );  // output messages about downloading files processing
