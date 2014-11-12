@@ -6,15 +6,27 @@
   // include states array for address translation below
   require_once( BASE_PATH.'app/helpers/states_array.php' );
   
+  // load terms to create columns in output
+  $contents = file_get_contents( BASE_PATH.'inputs/terms.csv' );
+  $contents = explode( "\n", $contents );
+  foreach( $contents as $row ) {
+    $term = explode( '","', $row );
+    $terms[] = trim( $term[0], '"' );
+  }
+  
   // create fresh results.csv
-  file_put_contents( CSV_RESULTS_FILE_PATH, '"ID","Website Name","URL","Primary Telephone","Primary Street","Primary City","Primary State","Primary Zip","Num Emails","Num Phones","Num Addresses"' );
+  $string = '"ID","Website Name","URL","Primary Telephone","Primary Street","Primary City","Primary State","Primary Zip","Num Emails","Num Phones","Num Addresses"';
+  foreach( $terms as $term ) // add terms to results output
+    $string .= ',"'.$term.'"';
+  file_put_contents( CSV_RESULTS_FILE_PATH, $string );
+  
+  // create fresh contacts pages results file
   file_put_contents( CONTACT_PAGES_CSV_RESULTS_FILE_PATH, '"ID","Website Name","Website URL","File URL","Num Emails"' );
 
   // load targets.csv
   $contents = file_get_contents( BASE_PATH.'inputs/targets.csv' );
-  // replace stupid angled double quotes
-  $contents = str_replace( '“', '"', $contents );
-  $contents = str_replace( '”', '"', $contents );
+  $contents = str_replace( '“', '"', $contents ); // replace stupid angled double quotes
+  $contents = str_replace( '”', '"', $contents ); // replace stupid angled double quotes
   $contents = explode( NEW_LINE_CHARACTER, $contents );
   foreach( $contents as $content ) {
     $content = explode( ',"', $content );
@@ -35,8 +47,6 @@
     require_once( BASE_PATH.'app/libraries/data_science_toolkit_php_api_client/dst_api_client.php' );
     $Dst = new Dst_api_client();
     $Dst->set_base_url();
-  } else {
-    echo " ** ADDRESS EXTRACTION DISABLED **";
   }
   
   // load website class to store data in
@@ -67,6 +77,9 @@
     $emails = array();
     $addresses = array();
     $phones = array();
+    $found_terms = array();
+    foreach( $terms as $term )
+      $found_terms[$term] = 0;
     $pages_with_emails = array();
     $pages_with_phones = array();
     foreach( $webpages as $Webpage ) {
@@ -79,8 +92,14 @@
         $pages_with_phones[$Webpage->url] = count( array_unique( $Webpage->phones ) );
       }
       if( count( $Webpage->addresses ) > 0 )
-        $addresses = array_merge( $addresses, array_unique( $Webpage->addresses ) );  
+        $addresses = array_merge( $addresses, array_unique( $Webpage->addresses ) );
+      if( count( $Webpage->terms ) > 0 ) {
+        foreach( $Webpage->terms as $term => $count )
+          $found_terms[$term] = $found_terms[$term] + $count;
+      }
     }
+    
+    var_dump( $found_terms );
     
     // extract most commonly occuring email that matches the website url
     if( count( $emails ) > 0 ) {
@@ -147,10 +166,11 @@
     }
     
     // generate basic results csv line and save
-    if( $primary_phone != '' ) {
+    if( $primary_phone != '' )
       $primary_phone = preg_replace( '/[^0-9]/', '', $primary_phone );
-    }
     $csv_string = "\n".'"'.$Website->id.'","'.preg_replace( '/[^a-zA-Z0-9\s]/', '', $Website->name ).'","'.$Website->base_url.'","'.$primary_phone.'","'.preg_replace( '/[^a-zA-Z0-9\s]/', '', $street ).'","'.preg_replace( '/[^a-zA-Z0-9\s]/', '', $city ).'","'.$state.'","'.$zip.'","'.count($emails).'","'.count($phones).'","'.count($addresses).'"';
+    foreach( $terms as $term )
+      $csv_string .= ',"'.$found_terms[$term].'"';
     file_put_contents( CSV_RESULTS_FILE_PATH, $csv_string, FILE_APPEND );
     
     // generate csv containing pages with lots of emails

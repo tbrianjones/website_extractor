@@ -21,6 +21,7 @@
     public $phones = array();
     public $faxes = array();
     public $addresses = array();
+    public $terms = array();
         
     public function __construct( $url ) {
       $this->url = $url;

@@ -4,6 +4,7 @@
     
     public $Webpage;
     private $Dom;
+    private $terms; // trigger terms for scraping
     
     // link data
     //
@@ -21,11 +22,31 @@
 			$this->Dom = new DOMDocument();
 			@$this->Dom->loadHTML( $this->Webpage->html ); // @ hides errors for malformed html			
       
+      // load terms for scraping
+  		$contents = file_get_contents( BASE_PATH.'inputs/terms.csv' );
+  		$contents = explode( "\n", $contents );
+      $i = 0;
+      foreach( $contents as $row ) {
+        $i++;
+    		// cleanse term
+    		$row = explode( '","', $row );
+    		$term = trim( $row[0], '"' );
+    		$this->terms[$i]['term'] = $term;
+    		// create term counter in webpage object
+    		if( ! isset( $this->Webpage->terms[$term] ) )
+      		$this->Webpage->terms[$term] = 0;
+        // cleanse triggers and extract them from html
+    		$triggers = trim( $row[1], '"' );
+    		$triggers = str_replace( ', ', ',', $triggers ); // make sure we only have commas between triggers
+    		$this->terms[$i]['triggers'] = explode( ',', $triggers );
+      }
+      
       // extract data
       $this->scrape_links();
       $this->scrape_emails();
       $this->scrape_phones();
       $this->scrape_addresses();
+      $this->scrape_terms();
       
       // return updated webpage object
       return $this->Webpage;
@@ -39,7 +60,7 @@
     //
     //  - stores links in $this->internal_links
 		//
-		function scrape_links() {
+		private function scrape_links() {
 			
 			echo "\n\n--- SCRAPING AND PROCESSING LINKS";
 			
@@ -95,7 +116,7 @@
     
     // add emails to emails table
 		//
-		function scrape_emails() {
+		private function scrape_emails() {
 		
 			echo "\n\n--- SCRAPING AND SAVING EMAILS";
 			
@@ -121,7 +142,7 @@
 		
 		// get addresses
 		//
-		function scrape_addresses()
+		private function scrape_addresses()
 		{
 		
 			echo "\n\n--- SCRAPING ADDRESSES";
@@ -184,7 +205,7 @@
 		
 		// get phone numbers
 		//
-		function scrape_phones() {
+		private function scrape_phones() {
 						
 			echo "\n\n\n--- SCRAPING PHONES ---";
 						
@@ -233,6 +254,19 @@
 				echo "\n  - no phones were found in this file";
 			}
 
+		}
+		
+		// scrapes and stores terms in $this->Webpage->terms array
+		//
+		private function scrape_terms() {
+  		echo "\n\n\n--- SCRAPING TERMS (from triggers) ---";
+  		foreach( $this->terms as $term ) {
+    		$regex = '`\b('.implode('|',$term['triggers']).')\b`i';
+    		if( $results = preg_match_all( $regex, $this->Webpage->html, $matches ) ) {
+				  $this->Webpage->terms[$term['term']] = $this->Webpage->terms[$term['term']] + count( $matches[0] );
+				  var_dump( $matches );
+				}
+  		}
 		}
 				
     
