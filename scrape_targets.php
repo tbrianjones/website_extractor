@@ -7,9 +7,8 @@
   require_once( 'states_array.php' );
   
   // create fresh results.csv
-  file_put_contents( CONTACT_PAGES_CSV_RESULTS_FILE_PATH, '"ID","Website Name","Website URL","File URL","Emails"' );
-  file_put_contents( CSV_RESULTS_FILE_PATH, 'Business Name,URL,Telephone,Street,City,State,Zip' );
-  file_put_contents( INSIGHTLY_CSV_RESULTS_FILE_PATH, 'Organization Name,Work phone,Work email,Work web site,Work line #1,Work city,Work state,Work zip/postal code,Work country,Organization Tag 1,Background' );
+  file_put_contents( CSV_RESULTS_FILE_PATH, '"ID","Website Name","URL","Primary Telephone","Primary Street","Primary City","Primary State","Primary Zip","Num Emails","Num Phones","Num Addresses"' );
+  file_put_contents( CONTACT_PAGES_CSV_RESULTS_FILE_PATH, '"ID","Website Name","Website URL","File URL","Num Emails"' );
 
   // load targets.csv
   $contents = file_get_contents( 'targets.csv' );
@@ -36,6 +35,8 @@
     require_once( 'libraries/data_science_toolkit_php_api_client/dst_api_client.php' );
     $Dst = new Dst_api_client();
     $Dst->set_base_url();
+  } else {
+    echo " ** ADDRESS EXTRACTION DISABLED **";
   }
   
   // load website class to store data in
@@ -108,7 +109,6 @@
       $primary_phone = '';
     
     // extract the most commonly occuring address
-    echo " ** ADDRESS EXTRACTION DISABLED **";
     if( EXTRACT_ADDRESSES AND count( $addresses ) > 0 ) {
       $addresses = array_count_values( $addresses );
       arsort( $addresses );
@@ -144,29 +144,7 @@
       $state = '';
       $country = '';
       $zip = '';
-    }    
-    
-    // create notes about most likely contact pages
-    arsort( $pages_with_phones );
-    arsort( $pages_with_emails );
-    $i = 0;
-    $notes = '';
-    foreach( $pages_with_emails as $url => $count ) {
-      $notes .= "Webpage with $count Emails\n$url\n\n";
-      $i++;
-      if( $i == 5 )
-        break(1);
     }
-    $i = 0;
-    foreach( $pages_with_phones as $url => $count ) {
-      $notes .= "Webpage with $count Phone Numbers\n$url\n\n";
-      $i++;
-      if( $i == 5 )
-        break(1);
-    }
-    if( $primary_address != '' )
-      $notes .= "Primary Address\n$primary_address";
-    $notes = str_replace( "'", '"', $notes ); // removes single quotes ( which there really shouldn't be anyway ), so we don't mess up the csv
     
     // generate basic results csv line and save
     if( $primary_phone != '' ) {
@@ -174,12 +152,8 @@
     } else {
       $kma_phone = '';
     }
-    $csv_string = "\n".'"'.strtoupper( preg_replace( '/[^a-zA-Z0-9\s]/', '', $Website->name ) ).'","'.strtoupper( str_replace( 'www.', '', parse_url( $Website->base_url, PHP_URL_HOST ) ) ).'","'.$kma_phone.'","'.strtoupper( preg_replace( '/[^a-zA-Z0-9\s]/', '', $street ) ).'","'.strtoupper( preg_replace( '/[^a-zA-Z0-9\s]/', '', $city ) ).'","'.strtoupper( $state ).'","'.$zip.'"';
+    $csv_string = "\n".'"'.strtoupper( preg_replace( '/[^a-zA-Z0-9\s]/', '', $Website->name ) ).'","'.strtoupper( str_replace( 'www.', '', parse_url( $Website->base_url, PHP_URL_HOST ) ) ).'","'.$kma_phone.'","'.strtoupper( preg_replace( '/[^a-zA-Z0-9\s]/', '', $street ) ).'","'.strtoupper( preg_replace( '/[^a-zA-Z0-9\s]/', '', $city ) ).'","'.strtoupper( $state ).'","'.$zip.'","'.count($emails).'","'.count($phones).'","'.count($addresses).'"';
     file_put_contents( CSV_RESULTS_FILE_PATH, $csv_string, FILE_APPEND );
-    
-    // generate insightly csv line and save
-    $csv_string = "\n".'"'.$Website->name.' '.rand( 1000000000, 9999999999 ).'","'.$primary_phone.'","'.$primary_email.'","'.$Website->base_url.'","'.$street.'","'.$city.'","'.$state.'","'.$zip.'","'.$country.'","'.ORGANIZATION_TAG.'","'.$notes.'"';
-    file_put_contents( INSIGHTLY_CSV_RESULTS_FILE_PATH, $csv_string, FILE_APPEND );
     
     // generate csv containing pages with lots of emails
     foreach( $pages_with_emails as $url => $count ) {

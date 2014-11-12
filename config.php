@@ -19,13 +19,9 @@
   // - sometimes it's "\r\n"
   define( 'NEW_LINE_CHARACTER', "\n" );
   
-  // the tag to apply to each organization in insightly
-  define( 'ORGANIZATION_TAG', 'logistics' );
-  
   // results files
-  define( 'CSV_RESULTS_FILE_PATH', 'results.csv' );
-  define( 'INSIGHTLY_CSV_RESULTS_FILE_PATH', 'insightly_results.csv' );
-  define( 'CONTACT_PAGES_CSV_RESULTS_FILE_PATH', 'contact_pages.csv' );
+  define( 'CSV_RESULTS_FILE_PATH', 'results/results.csv' );
+  define( 'CONTACT_PAGES_CSV_RESULTS_FILE_PATH', 'results/contact_pages.csv' );
 
   // crawler sleep
   define( 'CRAWLER_SLEEP_BETWEEN_DOWNLOADS',      1 );      // seconds to sleep between downloads
