@@ -16,15 +16,15 @@
       $this->Website = $Website;
       
       // prime urls with base_url from website
-      require_once( 'Webpage.php' );
+      require_once( BASE_PATH.'app/models/Webpage.php' );
       $this->Website->add_webpage( new Webpage( $this->Website->base_url ) );
       
       // create curl object to download urls
-      require_once( 'Curl.php' );
+      require_once( BASE_PATH.'app/Curl.php' );
       $this->Curl = new Curl();
       
       // creaste scraper object to process html
-      require_once( 'Html_scraper.php' );
+      require_once( BASE_PATH.'app/Html_scraper.php' );
       $this->Scraper = new Html_scraper();
       
     } // end function

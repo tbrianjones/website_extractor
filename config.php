@@ -4,11 +4,14 @@
   // --- GENERAL SETTINGS -------------------------------------------------
 
   
+  // base path of this app
+  define( 'BASE_PATH', '/data/website_extractor/' ); // include trailing slash
+  
   // what to extract
-  define( 'EXTRACT_ADDRESSES',    1 ); // extract addresses?  0-no, 1-yes
+  define( 'EXTRACT_ADDRESSES', 1 ); // extract addresses?  0-no, 1-yes
 
   // the max number of files to crawl per website
-  define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL',    10 );
+  define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL', 3 );
   
 
   // --- ADVANCED SETTINGS ------------------------------------------------
@@ -20,8 +23,9 @@
   define( 'NEW_LINE_CHARACTER', "\n" );
   
   // results files
-  define( 'CSV_RESULTS_FILE_PATH', 'results/results.csv' );
-  define( 'CONTACT_PAGES_CSV_RESULTS_FILE_PATH', 'results/contact_pages.csv' );
+  define( 'CSV_RESULTS_FILE_PATH', BASE_PATH.'results/results.csv' );
+  define( 'CONTACT_PAGES_CSV_RESULTS_FILE_PATH', BASE_PATH.'results/contact_pages.csv' );
+  
 
   // crawler sleep
   define( 'CRAWLER_SLEEP_BETWEEN_DOWNLOADS',      1 );      // seconds to sleep between downloads
