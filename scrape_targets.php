@@ -32,7 +32,7 @@
         
   // load dst api client
   if( EXTRACT_ADDRESSES ) {
-    require_once( BASE_PATH.'libraries/data_science_toolkit_php_api_client/dst_api_client.php' );
+    require_once( BASE_PATH.'app/libraries/data_science_toolkit_php_api_client/dst_api_client.php' );
     $Dst = new Dst_api_client();
     $Dst->set_base_url();
   } else {
