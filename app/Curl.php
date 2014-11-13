@@ -8,10 +8,28 @@
 			// output what's happening
 			echo "\n\n--- DOWNLOADING FILE";
 			
-			// mark wmv files as junk and don't download
-			if( substr( $Webpage->url, -4 ) == '.wmv' ) {
+			// mark certain files as junk and don't download them
+			$bad_file_types = array(
+        '.pdf',
+        '.mov',
+        '.mpg',
+        '.mp3',
+        '.mp4',
+        '.doc',
+        '.xls',
+        '.wmv',
+        '.zip',
+        '.bmp',
+        '.jpg',
+        '.png',
+        '.tif',
+        '.gif',
+        '.swf',
+        '.exe'
+			);
+			if( in_array( substr( $Webpage->url, -4 ), $bad_file_types ) ) {
 			  $Webpage->junk = TRUE;
-				$Webpage->download_error = "We don't process .wmv files.";
+				$Webpage->download_error = "We don't process this file type.";
 				return $Webpage;
       }
 			
