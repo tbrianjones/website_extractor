@@ -261,13 +261,14 @@
 		private function scrape_terms() {
   		echo "\n\n\n--- SCRAPING TERMS (from triggers) ---";
   		foreach( $this->terms as $term ) {
+    		echo "\n\n -- ".$term['term'].': '.implode(', ',$term['triggers']);
     		$regex = '`\b('.implode('|',$term['triggers']).')\b`i';
     		if( $results = preg_match_all( $regex, $this->Webpage->html, $matches ) ) {
 				  $this->Webpage->terms[$term['term']] = $this->Webpage->terms[$term['term']] + count( $matches[0] );
 				  foreach( $matches[0] as $match )
 				    echo "\n  - $match";
 				} else
-          echo "\n  - no matches found";
+          echo "\n  * no matches found";
   		}
 		}
 				
