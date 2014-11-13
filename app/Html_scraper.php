@@ -264,8 +264,10 @@
     		$regex = '`\b('.implode('|',$term['triggers']).')\b`i';
     		if( $results = preg_match_all( $regex, $this->Webpage->html, $matches ) ) {
 				  $this->Webpage->terms[$term['term']] = $this->Webpage->terms[$term['term']] + count( $matches[0] );
-				  var_dump( $matches );
-				}
+				  foreach( $matches[0] as $match )
+				    echo "\n  - $match";
+				} else
+          echo "\n  - no matches found";
   		}
 		}
 				

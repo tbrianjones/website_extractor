@@ -30,9 +30,9 @@
   $contents = explode( NEW_LINE_CHARACTER, $contents );
   foreach( $contents as $content ) {
     $content = explode( ',"', $content );
-    $target['id'] = trim( $content[0], '"' );
-    $target['name'] = trim( $content[1], '"' );
-    $url = trim( $content[2], '"' );
+    $target['id'] = trim( $content[0], '" ' );
+    $target['name'] = trim( $content[1], '" ' );
+    $url = trim( $content[2], '" ' );
     if( ! parse_url( $url ) ) {
       echo "\n ** Bad URL ( ".$url." ): skipping this target.";
       continue;
