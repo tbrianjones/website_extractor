@@ -43,7 +43,7 @@
   }
         
   // load dst api client
-  if( EXTRACT_ADDRESSES ) {
+  if( SCRAPE_ADDRESSES ) {
     require_once( BASE_PATH.'app/libraries/data_science_toolkit_php_api_client/dst_api_client.php' );
     $Dst = new Dst_api_client();
     $Dst->set_base_url();
@@ -128,7 +128,7 @@
       $primary_phone = '';
     
     // extract the most commonly occuring address
-    if( EXTRACT_ADDRESSES AND count( $addresses ) > 0 ) {
+    if( SCRAPE_ADDRESSES AND count( $addresses ) > 0 ) {
       $addresses = array_count_values( $addresses );
       arsort( $addresses );
       var_dump( $addresses );

@@ -6,15 +6,23 @@
   
   // base path of this app
   define( 'BASE_PATH', '/data/website_extractor/' ); // include trailing slash
-  
-  // what to extract
-  define( 'EXTRACT_ADDRESSES', 1 ); // extract addresses?  0-no, 1-yes
 
+  // where do we geocode addresses from?
+  //
+  //  - this utility only normalizes addresses ... it does not get lat/lon
+  //  - dst ( open and free data science toolkit
+  //  - geocodio ( open and free for just normalizing an address into components )
+  //
+  define( 'GEOCODING_SOURCE', 'dst' ); // options are: dts & geocodio
+  define( 'GEOCODIO_API_KEY', '' );
+  if( GEOCODING_SOURCE != 'dst' AND GEOCODING_SOURCE != 'geocodio' )
+    die( 'Geocoding source not set properly in config.' );
+  
   // the max number of files to crawl per website
   define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL', 20 );
   
   // what to scrape
-  define( 'SCRAPE_EMAILS',    1 );
+  define( 'SCRAPE_EMAILS',    0 );
   define( 'SCRAPE_ADDRESSES', 1 );
   define( 'SCRAPE_PHONES',    1 );
   define( 'SCRAPE_TERMS',     0 );
@@ -31,7 +39,8 @@
   // results files
   define( 'CSV_RESULTS_FILE_PATH', BASE_PATH.'results/results.csv' );
   define( 'CONTACT_PAGES_CSV_RESULTS_FILE_PATH', BASE_PATH.'results/contact_pages.csv' );
-  
+  define( 'CSV_ADDRESS_RESULTS_FILE_PATH', BASE_PATH.'results/address_results.csv' );
+  define( 'CSV_PHONE_RESULTS_FILE_PATH', BASE_PATH.'results/phone_results.csv' );
 
   // crawler sleep
   define( 'CRAWLER_SLEEP_BETWEEN_DOWNLOADS', 250000 ); // microseconds to sleep between downloads ( 2,000,000 = 2sec )

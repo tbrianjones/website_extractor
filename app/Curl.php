@@ -11,21 +11,39 @@
 			// mark certain files as junk and don't download them
 			$bad_file_types = array(
         '.pdf',
+        '.PDF',
         '.mov',
+        '.MOV',
         '.mpg',
+        '.MPG',
         '.mp3',
+        '.MP3',
         '.mp4',
+        '.MP4',
         '.doc',
+        '.DOC',
         '.xls',
+        '.XLS',
         '.wmv',
+        '.WMV',
         '.zip',
+        '.ZIP',
         '.bmp',
+        '.BMP',
         '.jpg',
+        '.JPG',
         '.png',
+        '.PNG',
         '.tif',
+        '.TIF',
+        '.tiff',
+        '.TIFF',
         '.gif',
+        '.GIF',
         '.swf',
-        '.exe'
+        '.SWF',
+        '.exe',
+        '.EXE'
 			);
 			if( in_array( substr( $Webpage->url, -4 ), $bad_file_types ) ) {
 			  $Webpage->junk = TRUE;
