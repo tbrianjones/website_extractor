@@ -28,8 +28,10 @@
         $this->scrape_emails();
       if( SCRAPE_PHONES )
         $this->scrape_phones();
-      if( SCRAPE_ADDRESSES )
+      if( SCRAPE_ADDRESSES ) {
+        $this->Webpage->gen_content_stripped_of_html();
         $this->scrape_addresses();
+      }
       if( SCRAPE_TERMS ) {
         // load terms for scraping
     		$contents = file_get_contents( BASE_PATH.'inputs/terms.csv' );
@@ -149,7 +151,7 @@
 		//
 		private function scrape_addresses()
 		{
-		
+		  		  
 			echo "\n\n--- SCRAPING ADDRESSES";
 						
 			// extract addresses from file contents
@@ -160,7 +162,7 @@
 			//
 			// (\d{2,5}|post office|p\.?\s?o\.?)(\s*(?:\S\s*){10,100})
 			$regex = "/\b(p\.?\s?o\.?\b|post office|\d{2,5})\s*(?:\S\s*){8,50}(AK|Alaska|AL|Alabama|AR|Arkansas|AZ|Arizona|CA|California|CO|Colorado|CT|Connecticut|DC|Washington\sDC|Washington\D\.C\.|DE|Delaware|FL|Florida|GA|Georgia|GU|Guam|HI|Hawaii|IA|Iowa|ID|Idaho|IL|Illinois|IN|Indiana|KS|Kansas|KY|Kentucky|LA|Louisiana|MA|Massachusetts|MD|Maryland|ME|Maine|MI|Michigan|MN|Minnesota|MO|Missouri|MS|Mississippi|MT|Montana|NC|North\sCarolina|ND|North\sDakota|NE|New\sEngland|NH|New\sHampshire|NJ|New\sJersey|NM|New\sMexico|NV|Nevada|NY|New\sYork|OH|Ohio|OK|Oklahoma|OR|Oregon|PA|Pennsylvania|RI|Rhode\sIsland|SC|South\sCarolina|SD|South\sDakota|TN|Tennessee|TX|Texas|UT|Utah|VA|Virginia|VI|Virgin\sIslands|VT|Vermont|WA|Washington|WI|Wisconsin|WV|West\sVirginia|WY|Wyoming)(\s+|\&nbsp\;|\<(\S|\s){1,10}\>){1,5}\d{5}/i";
-			$results = preg_match_all( $regex, $this->Webpage->html, $addresses );
+			$results = preg_match_all( $regex, $this->Webpage->content_stripped_of_html, $addresses );
 			if( $results > 0 ) {
 				
 				// get the addresses from the preg match array

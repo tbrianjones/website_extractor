@@ -109,9 +109,14 @@
     if( SCRAPE_ADDRESSES AND count( $addresses ) > 0 ) {
       $addresses = array_count_values( $addresses );
       foreach( $addresses as $address => $count ) {
-        $primary_address = key( $addresses );
+        echo "\n -- Normalizing Address: $address";
+        $street = '';
+        $city = '';
+        $state = '';
+        $country = '';
+        $zip = '';
         if( GEOCODING_SOURCE == 'dst' ) {
-          $parts = $Dst->street2coordinates( $primary_address );
+          $parts = $Dst->street2coordinates( $address );
           $parts = json_decode( $parts, TRUE );
           $parts = current( $parts );
           if( isset( $parts['street_address'] ) )
@@ -131,20 +136,36 @@
           else
             $country = '';
           // extract zip
-          $zip = substr( $primary_address, -5 );
+          $zip = substr( $address, -5 );
           if( ! is_numeric( $zip ) )
             $zip = '';
         } else if( GEOCODING_SOURCE == 'geocodio' ) {
-          // get data from geocodio and process it
+          time_nanosleep( 0, 500000000 );
+          $cmd = 'curl -XGET "https://api.geocod.io/v1/parse?q='.urlencode($address).'&api_key='.GEOCODIO_API_KEY.'"';
+          //echo "\n\n".'curl -XGET "https://api.geocod.io/v1/geocode?q='.urlencode($address).'&api_key='.GEOCODIO_API_KEY.'"'."\n\n";
+          $response = shell_exec( $cmd );
+          $Response = json_decode( $response );
+          if( isset($Response->address_components->formatted_street) )
+            $street = $Response->address_components->number.' '.$Response->address_components->formatted_street;
+          if( isset($Response->address_components->city) )
+            $city = $Response->address_components->city;
+          if( isset($Response->address_components->state) )
+            $state = $Response->address_components->state;
+          if( isset($Response->address_components->zip) )
+            $zip = $Response->address_components->zip;
         }
+        
+        // cleanse for csv
+        $street = str_replace( '"', ' ', $street );
+        $city = str_replace( '"', ' ', $city );
+        $address = str_replace( '"', ' ', $address );
+
+        // generate basic results csv line and save
+        $csv_string = "\n".'"'.$Website->id.'","'.preg_replace( '/[^a-zA-Z0-9\s]/', '', $Website->name ).'","'.$Website->base_url.'","'.$street.'","'.$city.'","'.$state.'","'.$zip.'","'.$address.'","'.$count.'"';
+        file_put_contents( CSV_ADDRESS_RESULTS_FILE_PATH, $csv_string, FILE_APPEND );
       }
       
-      // generate basic results csv line and save
-      $csv_string = "\n".'"'.$Website->id.'","'.preg_replace( '/[^a-zA-Z0-9\s]/', '', $Website->name ).'","'.$Website->base_url.'","'.preg_replace( '/[^a-zA-Z0-9\s]/', '', $street ).'","'.preg_replace( '/[^a-zA-Z0-9\s]/', '', $city ).'","'.$state.'","'.$zip.'","'.str_replace('"', ' ',$address).'","'.$count.'"';
-      file_put_contents( CSV_ADDRESS_RESULTS_FILE_PATH, $csv_string, FILE_APPEND );
-      
     }
-    die;
   }
 
 ?>

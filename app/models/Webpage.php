@@ -14,6 +14,7 @@
     public $content_type;
     public $http_status;
     public $html;
+    public $content_stripped_of_html = NULL;
     
     // extracted data
     public $local_links = array();
@@ -25,6 +26,11 @@
         
     public function __construct( $url ) {
       $this->url = $url;
+    }
+    
+    public function gen_content_stripped_of_html() {
+      if( is_null($this->content_stripped_of_html) )
+        $this->content_stripped_of_html = strip_tags( $this->html, '<br><br/><br />' );
     }
     
   }
