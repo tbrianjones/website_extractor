@@ -11,7 +11,13 @@
   define( 'EXTRACT_ADDRESSES', 1 ); // extract addresses?  0-no, 1-yes
 
   // the max number of files to crawl per website
-  define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL', 50 );
+  define( 'CRAWLER_MAX_WEBPAGES_TO_CRAWL', 20 );
+  
+  // what to scrape
+  define( 'SCRAPE_EMAILS',    1 );
+  define( 'SCRAPE_ADDRESSES', 1 );
+  define( 'SCRAPE_PHONES',    1 );
+  define( 'SCRAPE_TERMS',     0 );
   
 
   // --- ADVANCED SETTINGS ------------------------------------------------

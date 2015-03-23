@@ -22,31 +22,36 @@
 			$this->Dom = new DOMDocument();
 			@$this->Dom->loadHTML( $this->Webpage->html ); // @ hides errors for malformed html			
       
-      // load terms for scraping
-  		$contents = file_get_contents( BASE_PATH.'inputs/terms.csv' );
-  		$contents = explode( "\n", $contents );
-      $i = 0;
-      foreach( $contents as $row ) {
-        $i++;
-    		// cleanse term
-    		$row = explode( '","', $row );
-    		$term = trim( $row[0], '"' );
-    		$this->terms[$i]['term'] = $term;
-    		// create term counter in webpage object
-    		if( ! isset( $this->Webpage->terms[$term] ) )
-      		$this->Webpage->terms[$term] = 0;
-        // cleanse triggers and extract them from html
-    		$triggers = trim( $row[1], '"' );
-    		$triggers = str_replace( ', ', ',', $triggers ); // make sure we only have commas between triggers
-    		$this->terms[$i]['triggers'] = explode( ',', $triggers );
-      }
-      
       // extract data
       $this->scrape_links();
-      $this->scrape_emails();
-      $this->scrape_phones();
-      $this->scrape_addresses();
-      $this->scrape_terms();
+      if( SCRAPE_EMAILS )
+        $this->scrape_emails();
+      if( SCRAPE_PHONES )
+        $this->scrape_phones();
+      if( SCRAPE_ADDRESSES )
+        $this->scrape_addresses();
+      if( SCRAPE_TERMS ) {
+        // load terms for scraping
+    		$contents = file_get_contents( BASE_PATH.'inputs/terms.csv' );
+    		$contents = explode( "\n", $contents );
+        $i = 0;
+        foreach( $contents as $row ) {
+          $i++;
+      		// cleanse term
+      		$row = explode( '","', $row );
+      		$term = trim( $row[0], '"' );
+      		$this->terms[$i]['term'] = $term;
+      		// create term counter in webpage object
+      		if( ! isset( $this->Webpage->terms[$term] ) )
+        		$this->Webpage->terms[$term] = 0;
+          // cleanse triggers and extract them from html
+      		$triggers = trim( $row[1], '"' );
+      		$triggers = str_replace( ', ', ',', $triggers ); // make sure we only have commas between triggers
+      		$this->terms[$i]['triggers'] = explode( ',', $triggers );
+        }
+        // scrape terms
+        $this->scrape_terms();
+      }
       
       // return updated webpage object
       return $this->Webpage;
