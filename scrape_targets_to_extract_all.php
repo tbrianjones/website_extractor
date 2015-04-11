@@ -1,5 +1,7 @@
 <?php
-    
+  
+  ini_set( 'memory_limit', '3000M' );
+  
   // load config
   require_once( 'config.php' );
   
