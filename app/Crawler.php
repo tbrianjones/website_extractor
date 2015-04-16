@@ -31,7 +31,8 @@
     
     // crawl the site
     public function go(
-      $limit = 1 // max files to crawl
+      $max_to_scrape = 10, // max files to scrape ( the filetypes we process )
+      $max_to_crawl = 50 // max to crawl ( we skip certain file types )
     ) {
       
       $num_webpages_crawled = 0;
@@ -40,15 +41,15 @@
       while( $num_webpages_crawled < $num_webpages_to_crawl ) {
         
         // stop crawling when specified limit is reached
-        if( $num_webpages_scraped == $limit ) {
-          echo "\n\n ** Crawler processed specified max number of files .. crawling stopped.";
-          break( 1 );
+        if( $num_webpages_scraped >= $max_to_scrape ) {
+          echo "\n\n ** Crawler scraped specified max number of files... crawling stopped.";
+          break(1);
         }
         
         $webpages = $this->Website->get_webpages();
         $webpages = array_slice( $webpages, $num_webpages_crawled );
         $Webpage = current( $webpages );
-        echo "\n\n=== PROCESSING WEBPAGE $num_webpages_crawled of $num_webpages_to_crawl Crawled - $num_webpages_scraped Scraped ( max to scrape: $limit )\n    $Webpage->url";
+        echo "\n\n=== PROCESSING WEBPAGE $num_webpages_crawled of $num_webpages_to_crawl Crawled - $num_webpages_scraped Scraped ( max to scrape: $max_to_scrape | max to crawl: $max_to_crawl )\n    $Webpage->url";
         if( $Webpage = $this->Curl->go( $Webpage ) ) {
           if( $Webpage->junk ) {
             echo "\n ** JUNK: $Webpage->download_error";
@@ -68,6 +69,14 @@
         $this->Website->update_webpage( $Webpage );
         $num_webpages_crawled++;
         $num_webpages_to_crawl = count( $this->Website->get_webpages() );
+        
+        // go to next webpage if over max pages to crawl
+        if( $num_webpages_crawled >= $max_to_crawl ) {
+          echo "\n\n ** Crawler crawled specified max number of files... crawling stopped.";
+          break(1);
+        }
+        
+        // sleep to not crush servers
         usleep( CRAWLER_SLEEP_BETWEEN_DOWNLOADS );
                 
       }

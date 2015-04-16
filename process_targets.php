@@ -57,7 +57,7 @@
     
     // crawl website
     $Crawler = new Crawler( $Website );
-    $Crawler->go( CRAWLER_MAX_WEBPAGES_TO_CRAWL );
+    $Crawler->go( CRAWLER_MAX_WEBPAGES_TO_SCRAPE, CRAWLER_MAX_WEBPAGES_TO_CRAWL );
     
     
     // --- process data from $Website object and write to csv ---
@@ -117,44 +117,47 @@
         $state = '';
         $country = '';
         $zip = '';
-        if( GEOCODING_SOURCE == 'dst' ) {
-          $parts = $Dst->street2coordinates( $address );
-          $parts = json_decode( $parts, TRUE );
-          $parts = current( $parts );
-          if( isset( $parts['street_address'] ) )
-            $street = $parts['street_address'];
-          else
-            $street = '';
-          if( isset( $parts['locality'] ) )
-            $city = $parts['locality'];
-          else
-            $city = '';
-          if( isset( $parts['region'] ) )
-            $state = $states[ $parts['region'] ];
-          else
-            $state = '';
-          if( isset( $parts['country_name'] ) )
-            $country = $parts['country_name'];
-          else
-            $country = '';
-          // extract zip
-          $zip = substr( $address, -5 );
-          if( ! is_numeric( $zip ) )
-            $zip = '';
-        } else if( GEOCODING_SOURCE == 'geocodio' ) {
-          time_nanosleep( 0, 500000000 );
-          $cmd = 'curl -XGET "https://api.geocod.io/v1/parse?q='.urlencode($address).'&api_key='.GEOCODIO_API_KEY.'"';
-          //echo "\n\n".'curl -XGET "https://api.geocod.io/v1/geocode?q='.urlencode($address).'&api_key='.GEOCODIO_API_KEY.'"'."\n\n";
-          $response = shell_exec( $cmd );
-          $Response = json_decode( $response );
-          if( isset($Response->address_components->formatted_street) )
-            $street = $Response->address_components->number.' '.$Response->address_components->formatted_street;
-          if( isset($Response->address_components->city) )
-            $city = $Response->address_components->city;
-          if( isset($Response->address_components->state) )
-            $state = $Response->address_components->state;
-          if( isset($Response->address_components->zip) )
-            $zip = $Response->address_components->zip;
+        if( GEOCODING )
+        {
+          if( GEOCODING_SOURCE == 'dst' ) {
+            $parts = $Dst->street2coordinates( $address );
+            $parts = json_decode( $parts, TRUE );
+            $parts = current( $parts );
+            if( isset( $parts['street_address'] ) )
+              $street = $parts['street_address'];
+            else
+              $street = '';
+            if( isset( $parts['locality'] ) )
+              $city = $parts['locality'];
+            else
+              $city = '';
+            if( isset( $parts['region'] ) )
+              $state = $states[ $parts['region'] ];
+            else
+              $state = '';
+            if( isset( $parts['country_name'] ) )
+              $country = $parts['country_name'];
+            else
+              $country = '';
+            // extract zip
+            $zip = substr( $address, -5 );
+            if( ! is_numeric( $zip ) )
+              $zip = '';
+          } else if( GEOCODING_SOURCE == 'geocodio' ) {
+            time_nanosleep( 0, 500000000 );
+            $cmd = 'curl -XGET "https://api.geocod.io/v1/parse?q='.urlencode($address).'&api_key='.GEOCODIO_API_KEY.'"';
+            //echo "\n\n".'curl -XGET "https://api.geocod.io/v1/geocode?q='.urlencode($address).'&api_key='.GEOCODIO_API_KEY.'"'."\n\n";
+            $response = shell_exec( $cmd );
+            $Response = json_decode( $response );
+            if( isset($Response->address_components->formatted_street) )
+              $street = $Response->address_components->number.' '.$Response->address_components->formatted_street;
+            if( isset($Response->address_components->city) )
+              $city = $Response->address_components->city;
+            if( isset($Response->address_components->state) )
+              $state = $Response->address_components->state;
+            if( isset($Response->address_components->zip) )
+              $zip = $Response->address_components->zip;
+          }
         }
         
         // cleanse for csv
